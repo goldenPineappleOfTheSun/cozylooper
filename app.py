@@ -5,14 +5,16 @@ from metronome import Metronome
 """ Main Loop """
 
 metronome = Metronome(120, left = 17, top = 1)
+clock = pygame.time.Clock()
 
 def start():    
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
-    metronome.redraw(None)
+    metronome.enable()
 
 def update():
-    a = 0
+    ticks = pygame.time.get_ticks()
+    metronome.update(None, ticks)
 
 def main():
     pygame.init()
@@ -30,6 +32,7 @@ def main():
      
     # main loop
     while running:  
+        clock.tick(60)
         update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

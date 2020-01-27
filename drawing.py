@@ -131,7 +131,6 @@ def line(x1, y1, x2, y2, style):
     pygame.display.update()
 
 def text(txt, left, top, style):
-    print(left, coords.x(left))
     x = coords.x(left)
     y = coords.y(top)
 
@@ -150,6 +149,10 @@ def text(txt, left, top, style):
 
 def clearCanvas():
     pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (0, 0, width * cw, height * ch))
+    pygame.display.update()
+
+def clearRect(x, y, w, h):
+    pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (coords.x(x), coords.y(y), coords.x(w), coords.y(h)))
     pygame.display.update()
 
 """ 
