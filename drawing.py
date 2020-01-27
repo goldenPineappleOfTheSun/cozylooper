@@ -85,6 +85,18 @@ def rectangle(left, top, width, height, style):
 
     pygame.display.update()
 
+def line(x1, y1, x2, y2, style):
+    fx =_transformX(x1)
+    fy =_transformY(y1)
+    tx = _transformX(x2)
+    ty = _transformY(y2)
+
+    drawStyle = _styleLine(style)
+
+    pygame.draw.line(canvas, drawStyle.line, (fx, fy), (tx, ty), drawStyle.lineWidth)
+
+    pygame.display.update()
+
 """ 
 fill width [line]
 #00ff00 1p 00ff00
@@ -102,7 +114,7 @@ def _styleRect(style):
             s = 'lineWidth'
         elif s == 'lineWidth':
             if not _isPoints(x):
-                raise Exception('wrong width format ("' + x + '")!' )
+                raise Exception('wrong width format ("' + style + '")!' )
             w = int(x[:-1])
             drawStyle.setLineWidth(w)
             s = 'line' if w > 0 else 'exit'
@@ -111,11 +123,29 @@ def _styleRect(style):
             s = 'exit'
     return drawStyle
 
+def _styleLine(style):
+    drawStyle = DrawStyle(lineWidth = 1);
+    parsed = style.split(' ');
+    s = 'width' if _isPoints(parsed[0]) else 'color'
+    for x in parsed:
+        if x == '':
+            continue
+        elif s == 'width':
+            if not _isPoints(x):
+                raise Exception('wrong width format ("' + style + '")!' )
+            w = int(x[:-1])
+            drawStyle.setLineWidth(w)
+            s = 'color'
+        elif s == 'color':
+            drawStyle.setLine(x)
+            s = 'exit'
+    return drawStyle
+
 def _transformX(value):
-    return utils.overload(value, string = _coordsFromString, integer = _xFromInteger)(value)
+    return utils.overload(value, string = _coordsFromString, number = _xFromNumber)(value)
 
 def _transformY(value):
-    return utils.overload(value, string = _coordsFromString, integer = _yFromInteger)(value)
+    return utils.overload(value, string = _coordsFromString, number = _yFromNumber)(value)
 
 def _coordsFromString(value):
     parts = value.split(' ')
@@ -127,7 +157,7 @@ def _coordsFromString(value):
             x = parts[i]
             if not _isCells(x):
                 raise Exception('wrong cells format ("' + value + '")!')
-            result += _xFromInteger(int(x[:-2])) if x[-2:] == 'cw' else _yFromInteger(int(x[:-2]))
+            result += _xFromNumber(int(x[:-2])) if x[-2:] == 'cw' else _yFromNumber(int(x[:-2]))
         elif i == 1:
             x = parts[i]
             if not _isUnaryOperator(x):
@@ -140,10 +170,10 @@ def _coordsFromString(value):
     return result
 
 
-def _xFromInteger(value: int):
+def _xFromNumber(value: int):
     return cw * value
 
-def _yFromInteger(value: int):
+def _yFromNumber(value: int):
     return ch * value
 
 def _isHexColor(value):
