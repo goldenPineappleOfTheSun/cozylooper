@@ -9,7 +9,8 @@ canvas = None
 clearColor = '#ffffff'
 
 _fonts = {
-    'open-sans-bold': 'fonts/OpenSans-ExtraBold.ttf'
+    'open-sans': 'fonts/OpenSans-Regular.ttf',
+    'open-sans-bold': 'fonts/OpenSans-Bold.ttf'
 }
 
 fontsCollection = {}
@@ -39,6 +40,9 @@ def setNewFont(key, style):
     if (key in fontsCollection):
         raise Exception('this font is already in collection')
     fontsCollection[key] = _styleFont(style)
+
+def setDefaultFont(value):
+    fontsCollection['default'] = fontsCollection[value]
 
 class DrawStyle:
     def __init__(self, 
@@ -127,13 +131,14 @@ def line(x1, y1, x2, y2, style):
     pygame.display.update()
 
 def text(txt, left, top, style):
+    print(left, coords.x(left))
     x = coords.x(left)
     y = coords.y(top)
 
     aligns = {
-        'midleft': lambda t, x, y: todraw.get_rect(midleft=(x, y)),
-        'center': lambda t, x, y: todraw.get_rect(center=(x, y)),
-        'midright': lambda t, x, y: todraw.get_rect(midright=(x, y))
+        'midleft': lambda t, _x, _y: todraw.get_rect(midleft=(_x, _y)),
+        'center': lambda t, _x, _y: todraw.get_rect(center=(_x, _y)),
+        'midright': lambda t, _x, _y: todraw.get_rect(midright=(_x, _y))
     }
 
     drawStyle = _styleText(style)
@@ -191,6 +196,14 @@ def _styleLine(style):
             s = 'exit'
     return drawStyle
 
+"""
+color fontname align
+#ff44ee 
+#ff44ee default
+#ff44ee open-sans
+#ff44ee open-sans midleft
+#ff44ee open-sans center
+"""
 def _styleText(style):
     drawStyle = DrawStyle(lineWidth = 1, font = 'default')
     parsed = style.split(' ')
@@ -209,6 +222,11 @@ def _styleText(style):
             s = 'exit'
     return drawStyle
 
+"""
+filename size
+open-sans 16
+open-sans-big 18
+"""
 def _styleFont(style):
     filename = None
     size = 16
@@ -219,8 +237,8 @@ def _styleFont(style):
             continue
         elif s == 'filename':
             filename = _fonts[x] if x != 'default' else None
-            s = 'font'
-        elif s == 'font':
+            s = 'size'
+        elif s == 'size':
             size = int(x)
             s = 'exit'
     return pygame.font.Font(filename, size) 
