@@ -6,7 +6,13 @@ ch = 16
 width = 16
 height = 16
 canvas = None
-clearColor = 'white'
+clearColor = '#ffffff'
+
+_fonts = {
+    'open-sans-bold': 'fonts/OpenSans-ExtraBold.ttf'
+}
+
+fontsCollection = {}
 
 def init(w, h, cellWidth = 16, cellHeight = 16, initialCanvas = None):
     global width
@@ -19,23 +25,31 @@ def init(w, h, cellWidth = 16, cellHeight = 16, initialCanvas = None):
     cw = cellWidth
     ch = cellHeight
     canvas = initialCanvas
-
+    fontsCollection['default'] = pygame.font.Font(None, 16)
 
 def setCanvas(value):
     global canvas
     canvas = value
+    clearCanvas()
 
 def setClearColor(value):
     clearColor = value
 
+def setNewFont(key, style):
+    if (key in fontsCollection):
+        raise Exception('this font is already in collection')
+    fontsCollection[key] = _styleFont(style)
+
 class DrawStyle:
     def __init__(self, 
             fill = 'white', line = 'black', fore = 'black',
-            lineWidth = 0):
+            lineWidth = 0, font = 'default', align = 'midleft'):
         self.line = line
         self.fill = fill
         self.fore = fore
         self.lineWidth = lineWidth
+        self.font = font
+        self.align = align
 
     def setLine(self, value):
         color = self._transformColor(value)
@@ -56,6 +70,14 @@ class DrawStyle:
         self.lineWidth = value
         return self
 
+    def setFont(self, value):
+        self.font = value
+        return self
+
+    def setAlign(self, value):
+        self.align = value
+        return self
+
     def _transformColor(self, value):
         result = (0, 0, 0)
         if (_isHexColor(value)):
@@ -63,18 +85,27 @@ class DrawStyle:
         else: 
             raise Exception('unknown color format')
         return result
-        
+
+class Coords:
+    def x(self, value):
+        return _transformX(value)
+    def y(self, value):
+        return _transformY(value) 
+
+coords = Coords()
+
 defaultDrawStyle = DrawStyle(
     line = 'black',
     fill = 'white',
     fore = 'black',
-    lineWidth = 0)
+    lineWidth = 0,
+    font = 'default')
 
 def rectangle(left, top, width, height, style):
-    x =_transformX(left)
-    y =_transformY(top)
-    w =_transformX(width)
-    h =_transformY(height)
+    x = coords.x(left)
+    y = coords.y(top)
+    w = coords.x(width)
+    h = coords.y(height)
 
     drawStyle = _styleRect(style)
 
@@ -82,19 +113,38 @@ def rectangle(left, top, width, height, style):
         pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h), drawStyle.lineWidth)
     else:
         pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
-
     pygame.display.update()
 
 def line(x1, y1, x2, y2, style):
-    fx =_transformX(x1)
-    fy =_transformY(y1)
-    tx = _transformX(x2)
-    ty = _transformY(y2)
+    fx = coords.x(x1)
+    fy = coords.y(y1)
+    tx = coords.x(x2)
+    ty = coords.y(y2)
 
     drawStyle = _styleLine(style)
 
     pygame.draw.line(canvas, drawStyle.line, (fx, fy), (tx, ty), drawStyle.lineWidth)
+    pygame.display.update()
 
+def text(txt, left, top, style):
+    x = coords.x(left)
+    y = coords.y(top)
+
+    aligns = {
+        'midleft': lambda t, x, y: todraw.get_rect(midleft=(x, y)),
+        'center': lambda t, x, y: todraw.get_rect(center=(x, y)),
+        'midright': lambda t, x, y: todraw.get_rect(midright=(x, y))
+    }
+
+    drawStyle = _styleText(style)
+
+    todraw = fontsCollection[drawStyle.font].render(txt, 1, drawStyle.fore)
+    place = aligns[drawStyle.align](todraw, x, y)
+    canvas.blit(todraw, place)
+    pygame.display.update()
+
+def clearCanvas():
+    pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (0, 0, width * cw, height * ch))
     pygame.display.update()
 
 """ 
@@ -103,8 +153,8 @@ fill width [line]
 #00ff00 0
 """
 def _styleRect(style):
-    drawStyle = DrawStyle();
-    parsed = style.split(' ');
+    drawStyle = DrawStyle()
+    parsed = style.split(' ')
     s = 'fill'
     for x in parsed:
         if x == '':
@@ -125,7 +175,7 @@ def _styleRect(style):
 
 def _styleLine(style):
     drawStyle = DrawStyle(lineWidth = 1);
-    parsed = style.split(' ');
+    parsed = style.split(' ')
     s = 'width' if _isPoints(parsed[0]) else 'color'
     for x in parsed:
         if x == '':
@@ -140,6 +190,41 @@ def _styleLine(style):
             drawStyle.setLine(x)
             s = 'exit'
     return drawStyle
+
+def _styleText(style):
+    drawStyle = DrawStyle(lineWidth = 1, font = 'default')
+    parsed = style.split(' ')
+    s = 'color'
+    for x in parsed:
+        if x == '':
+            continue
+        elif s == 'color':
+            drawStyle.setColor(x)
+            s = 'font'
+        elif s == 'font':
+            drawStyle.setFont(x)
+            s = 'align'
+        elif s == 'align':
+            drawStyle.setAlign(x)
+            s = 'exit'
+    return drawStyle
+
+def _styleFont(style):
+    filename = None
+    size = 16
+    parsed = style.split(' ')
+    s = 'filename'  
+    for x in parsed:
+        if x == '':
+            continue
+        elif s == 'filename':
+            filename = _fonts[x] if x != 'default' else None
+            s = 'font'
+        elif s == 'font':
+            size = int(x)
+            s = 'exit'
+    return pygame.font.Font(filename, size) 
+
 
 def _transformX(value):
     return utils.overload(value, string = _coordsFromString, number = _xFromNumber)(value)
