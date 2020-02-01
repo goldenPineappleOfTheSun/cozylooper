@@ -106,16 +106,16 @@ class Metronome:
 
     def redrawIndicator(self):
         outerStyles = {
-            MetronomeState.idle: '#444444',
-            MetronomeState.work: '#444444',
-            MetronomeState.blink: '#444444',
-            MetronomeState.set: '#f7a713',
+            MetronomeState.idle: '#ab9b87',
+            MetronomeState.work: '#ab9b87',
+            MetronomeState.blink: '#ab9b87',
+            MetronomeState.set: '#f5cb55',
         }
         innerStyles = {
-            MetronomeState.idle: '#444444',
-            MetronomeState.work: '#666666',
+            MetronomeState.idle: '#ab9b87',
+            MetronomeState.work: '#dac1a3',
             MetronomeState.blink: '#ffffff',
-            MetronomeState.set: '#f7a713',
+            MetronomeState.set: '#f5cb55',
         }
 
         draw.clearRect(self.left, self.top, 1, 1)

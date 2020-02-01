@@ -7,7 +7,7 @@ from track import Track
 """ Main Loop """
 
 metronome = Metronome(120, left = 16, top = 1)
-tracks = [Track(0, 1, 1),
+tracks = [
     Track(0, 1, 1),
     Track(1, 2, 1),
     Track(2, 3, 1),
@@ -50,17 +50,31 @@ def digitPressed(event):
         return
     metronome.inputBpmDigit(int(event.name))
 
+def arrowUpPressed(event):
+    for track in tracks:
+        track.decreaseSize()
+
+def arrowDownPressed(event):
+    for track in tracks:
+        track.increaseSize()
+
 def backspacePressed(event):     
     metronome.backspaceBpmDigit()
 
 def enterPressed(event):
     metronome.confirm()
+    for track in tracks:
+        track.confirm()
 
 def spacePressed(event):
     metronome.confirm()
+    for track in tracks:
+        track.confirm()
 
 def escPressed(event):
     metronome.cancel()
+    for track in tracks:
+        track.cancel()
 
 keyboard.on_press_key('b', bPressed)
 keyboard.add_hotkey('s + b', setBpmPressed)
@@ -75,6 +89,21 @@ keyboard.on_press_key('7', digitPressed)
 keyboard.on_press_key('8', digitPressed)
 keyboard.on_press_key('9', digitPressed)
 keyboard.on_press_key('0', digitPressed)
+keyboard.on_press_key('up', arrowUpPressed)
+keyboard.on_press_key('down', arrowDownPressed)
+
+keyboard.add_hotkey('s + f1', lambda: tracks[0].changeSize())
+keyboard.add_hotkey('s + f2', lambda: tracks[1].changeSize())
+keyboard.add_hotkey('s + f3', lambda: tracks[2].changeSize())
+keyboard.add_hotkey('s + f4', lambda: tracks[3].changeSize())
+keyboard.add_hotkey('s + f5', lambda: tracks[4].changeSize())
+keyboard.add_hotkey('s + f6', lambda: tracks[5].changeSize())
+keyboard.add_hotkey('s + f7', lambda: tracks[6].changeSize())
+keyboard.add_hotkey('s + f8', lambda: tracks[7].changeSize())
+keyboard.add_hotkey('s + f9', lambda: tracks[8].changeSize())
+keyboard.add_hotkey('s + f10', lambda: tracks[9].changeSize())
+keyboard.add_hotkey('s + f11', lambda: stracks[10].changeSize())
+keyboard.add_hotkey('s + f12', lambda: stracks[11].changeSize())
 
 keyboard.on_press_key('backspace', backspacePressed)
 keyboard.on_press_key('enter', enterPressed)
