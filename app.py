@@ -15,6 +15,7 @@ def start():
 def update():
     ticks = pygame.time.get_ticks()
     metronome.update(None, ticks)
+    draw.update()
 
 def main():
     pygame.init()

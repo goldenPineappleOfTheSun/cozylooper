@@ -69,10 +69,11 @@ class Metronome:
             MetronomeState.set: '#ffeb3b',
         }
 
+        draw.clearRect(self.left, self.top, 1, 1)
         draw.rectangle(self.left, self.top, 1, 1, outerStyles[self.state])
         draw.rectangle(self.left + 0.25, self.top + 0.25, 0.5, 0.5, innerStyles[self.state])
 
-    def redrawText(self):
+    def redrawText(self, needclear = True):
         styles = {
             MetronomeState.idle: '#444444',
             MetronomeState.work: '#444444',
@@ -82,4 +83,5 @@ class Metronome:
 
         x = str(self.left + 1) + 'cw + 6'
         y = self.top + 0.5
+        draw.clearRect(self.left + 1, self.top, self.WIDTH - 1, 1)
         draw.text(str(self.bpm) + 'bpm', x, y, styles[self.state])

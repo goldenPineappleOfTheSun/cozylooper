@@ -15,6 +15,8 @@ _fonts = {
 
 fontsCollection = {}
 
+updates = []
+
 def init(w, h, cellWidth = 16, cellHeight = 16, initialCanvas = None):
     global width
     global height
@@ -35,6 +37,7 @@ def setCanvas(value):
 
 def setClearColor(value):
     clearColor = value
+    pygame.display.update()
 
 def setNewFont(key, style):
     if (key in fontsCollection):
@@ -117,7 +120,6 @@ def rectangle(left, top, width, height, style):
         pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h), drawStyle.lineWidth)
     else:
         pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
-    pygame.display.update()
 
 def line(x1, y1, x2, y2, style):
     fx = coords.x(x1)
@@ -126,9 +128,7 @@ def line(x1, y1, x2, y2, style):
     ty = coords.y(y2)
 
     drawStyle = _styleLine(style)
-
     pygame.draw.line(canvas, drawStyle.line, (fx, fy), (tx, ty), drawStyle.lineWidth)
-    pygame.display.update()
 
 def text(txt, left, top, style):
     x = coords.x(left)
@@ -145,15 +145,43 @@ def text(txt, left, top, style):
     todraw = fontsCollection[drawStyle.font].render(txt, 1, drawStyle.fore)
     place = aligns[drawStyle.align](todraw, x, y)
     canvas.blit(todraw, place)
-    pygame.display.update()
 
 def clearCanvas():
     pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (0, 0, width * cw, height * ch))
-    pygame.display.update()
+    appendUpdateRect(0, 0, width, height)
 
 def clearRect(x, y, w, h):
     pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (coords.x(x), coords.y(y), coords.x(w), coords.y(h)))
-    pygame.display.update()
+    appendUpdateRect(x, y, w, h)
+
+def appendUpdateRect(x, y, w, h):
+    rect = pygame.Rect(x * cw, y * ch, w * cw, h * ch)
+    for x in updates:
+        newFullyContains = x.left >= rect.left and x.right <= rect.right and x.top >= rect.top and x.bottom <= rect.bottom 
+        oldFullyContains = x.left <= rect.left and x.right >= rect.right and x.top <= rect.top and x.bottom >= rect.bottom
+        
+        if oldFullyContains:
+            return
+
+        if newFullyContains:
+            x = x.union(rect)
+            return
+
+        isLeftAndRightMatches = x.left == rect.left and x.right == rect.right
+        isUnionableByHor = isLeftAndRightMatches and ((x.top > rect.top and x.top < rect.bottom) or (x.bottom < rect.bottom and x.bottom > rect.top))
+
+        isTopAndBottomMatches = x.top == rect.top and x.bottom == rect.bottom
+        isUnionableByVer = isTopAndBottomMatches and ((x.left >= rect.left and x.left <= rect.right) or (x.right <= rect.right and x.right >= rect.left))
+
+        if isUnionableByHor or isUnionableByVer:
+            x = x.union(rect)
+            return
+
+    updates.append(rect)
+
+def update():
+    pygame.display.update(updates)
+    updates.clear()
 
 """ 
 fill width [line]
