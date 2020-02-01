@@ -116,10 +116,10 @@ def rectangle(left, top, width, height, style):
 
     drawStyle = _styleRect(style)
 
+    pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
     if (drawStyle.lineWidth > 0):
-        pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h), drawStyle.lineWidth)
-    else:
-        pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
+        pygame.draw.rect(canvas, drawStyle.line, (x, y, w, h), drawStyle.lineWidth)
+    
 
 def line(x1, y1, x2, y2, style):
     fx = coords.x(x1)
@@ -181,11 +181,11 @@ def appendUpdateRect(x, y, w, h):
 
 def update():
     pygame.display.update(updates)
-    updates.clear()
+    updates.clear()    
 
 """ 
 fill width [line]
-#00ff00 1p 00ff00
+#00ff00 1p #00ff00
 #00ff00 0
 """
 def _styleRect(style):
@@ -209,6 +209,10 @@ def _styleRect(style):
             s = 'exit'
     return drawStyle
 
+""" 
+#ffaaaa
+5p #ffaaaa
+"""
 def _styleLine(style):
     drawStyle = DrawStyle(lineWidth = 1);
     parsed = style.split(' ')
