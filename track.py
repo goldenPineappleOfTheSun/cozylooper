@@ -19,8 +19,11 @@ class Track:
         self.HEIGHT = 17
         self._initDraw = False
 
-    def changeSize(self):
-        self.state = TrackState.setSize
+    def toggleChangeSize(self):
+        if self.state == TrackState.default: 
+            self.state = TrackState.setSize
+        elif self.state == TrackState.setSize: 
+            self.state = TrackState.default
         self.redraw()
 
     def decreaseSize(self):

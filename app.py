@@ -3,6 +3,7 @@ import drawing as draw
 import keyboard
 from metronome import Metronome
 from track import Track
+from tonearm import Tonearm
 
 """ Main Loop """
 
@@ -20,6 +21,8 @@ tracks = [
     Track(9, 12, 1),
     Track(10, 13, 1),
     Track(11, 14, 1),]
+tonearmA = Tonearm(size = 16, left = 5, top = 1)
+tonearmB = Tonearm(size = 16, left = 10, top = 1)
 clock = pygame.time.Clock()
 
 def start():    
@@ -28,7 +31,11 @@ def start():
 
 def update():
     ticks = pygame.time.get_ticks()
-    metronome.update(None, ticks)
+    metronome.update(ticks)
+    tonearmA.setPos(metronome.bpm, ticks / 1000)
+    tonearmA.update()
+    tonearmB.setPos(metronome.bpm, ticks / 1000)
+    tonearmB.update()
     for track in tracks:
         track.update()
     draw.update()
@@ -92,18 +99,18 @@ keyboard.on_press_key('0', digitPressed)
 keyboard.on_press_key('up', arrowUpPressed)
 keyboard.on_press_key('down', arrowDownPressed)
 
-keyboard.add_hotkey('s + f1', lambda: tracks[0].changeSize())
-keyboard.add_hotkey('s + f2', lambda: tracks[1].changeSize())
-keyboard.add_hotkey('s + f3', lambda: tracks[2].changeSize())
-keyboard.add_hotkey('s + f4', lambda: tracks[3].changeSize())
-keyboard.add_hotkey('s + f5', lambda: tracks[4].changeSize())
-keyboard.add_hotkey('s + f6', lambda: tracks[5].changeSize())
-keyboard.add_hotkey('s + f7', lambda: tracks[6].changeSize())
-keyboard.add_hotkey('s + f8', lambda: tracks[7].changeSize())
-keyboard.add_hotkey('s + f9', lambda: tracks[8].changeSize())
-keyboard.add_hotkey('s + f10', lambda: tracks[9].changeSize())
-keyboard.add_hotkey('s + f11', lambda: stracks[10].changeSize())
-keyboard.add_hotkey('s + f12', lambda: stracks[11].changeSize())
+keyboard.add_hotkey('s + f1', lambda: tracks[0].toggleChangeSize())
+keyboard.add_hotkey('s + f2', lambda: tracks[1].toggleChangeSize())
+keyboard.add_hotkey('s + f3', lambda: tracks[2].toggleChangeSize())
+keyboard.add_hotkey('s + f4', lambda: tracks[3].toggleChangeSize())
+keyboard.add_hotkey('s + f5', lambda: tracks[4].toggleChangeSize())
+keyboard.add_hotkey('s + f6', lambda: tracks[5].toggleChangeSize())
+keyboard.add_hotkey('s + f7', lambda: tracks[6].toggleChangeSize())
+keyboard.add_hotkey('s + f8', lambda: tracks[7].toggleChangeSize())
+keyboard.add_hotkey('s + f9', lambda: tracks[8].toggleChangeSize())
+keyboard.add_hotkey('s + f10', lambda: tracks[9].toggleChangeSize())
+keyboard.add_hotkey('s + f11', lambda: tracks[10].toggleChangeSize())
+keyboard.add_hotkey('s + f12', lambda: tracks[11].toggleChangeSize())
 
 keyboard.on_press_key('backspace', backspacePressed)
 keyboard.on_press_key('enter', enterPressed)
