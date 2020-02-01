@@ -36,10 +36,12 @@ class Metronome:
             self.state = MetronomeState.work
             needRedraw = True
 
-        if (self.state == MetronomeState.work or self.state == MetronomeState.blink) and _elapsedTicks != self._elapsedTicks:
+        if _elapsedTicks != self._elapsedTicks:
             self._elapsedTicks = _elapsedTicks
-            self.playSound()
-            # todo fire event       
+            metronomeEnabled = self.state == MetronomeState.work or self.state == MetronomeState.blink
+            if metronomeEnabled:
+                self.playSound()
+                # todo fire event       
 
         if needRedraw == True or _elapsedTicks <= 1:
             self.redraw(None)
@@ -49,6 +51,15 @@ class Metronome:
 
     def enable(self):
         self.state = MetronomeState.work 
+
+    def disable(self):
+        self.state = MetronomeState.idle 
+
+    def toggle(self):
+        if self.state == MetronomeState.idle:
+            self.enable()
+        else:
+            self.disable()
 
     def redraw(self, store):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
