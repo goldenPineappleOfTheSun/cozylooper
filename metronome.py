@@ -1,5 +1,6 @@
 import enum
 import math
+import keyboard
 import soundfile as sf
 import sounddevice as sd
 import drawing as draw
@@ -14,6 +15,7 @@ class MetronomeState(enum.Enum):
 class Metronome:
     def __init__(self, bpm = 120, left = 0, top = 0):
         self.bpm = bpm
+        self._inputBpm = bpm
         self.left = left
         self.top = top
         self.WIDTH = 5
@@ -35,6 +37,8 @@ class Metronome:
         if self.state == MetronomeState.blink and elapsed % interval > interval / 10:
             self.state = MetronomeState.work
             needRedraw = True
+        if self.state == MetronomeState.set:
+            needRedraw = True
 
         if _elapsedTicks != self._elapsedTicks:
             self._elapsedTicks = _elapsedTicks
@@ -44,7 +48,7 @@ class Metronome:
                 # todo fire event       
 
         if needRedraw == True or _elapsedTicks <= 1:
-            self.redraw(None)
+            self.redraw()
 
     def playSound(self):
         sd.play(self.sound * 0.2, self.soundSamplerate)
@@ -56,12 +60,46 @@ class Metronome:
         self.state = MetronomeState.idle 
 
     def toggle(self):
-        if self.state == MetronomeState.idle:
+        if self.state == MetronomeState.idle or self.state == MetronomeState.set:
             self.enable()
         else:
             self.disable()
+        self.redraw()
 
-    def redraw(self, store):
+    def changeBpm(self):
+        self._inputBpm = 0
+        self.state = MetronomeState.set
+
+    def confirm(self):
+        self.setBpm(self._inputBpm)
+        self.state = MetronomeState.idle
+        self.redraw()
+
+    def cancel(self):
+        self._inputBpm = self.bpm
+        self.state = MetronomeState.idle
+        self.redraw()
+
+    def setBpm(self, bpm):
+        if bpm < 20:
+            bpm = 20
+        self.bpm = bpm
+        self.redraw()
+
+    def inputBpmDigit(self, n):
+        if self._inputBpm < 100:
+            self._inputBpm = self._inputBpm * 10 + n
+            self.redrawText()
+
+    def backspaceBpmDigit(self):
+        if self._inputBpm > 9:
+            self._inputBpm = math.floor(self._inputBpm / 10)
+            self.redrawText(None)
+        else:
+            self._inputBpm = 0
+            self.redrawText(None)
+
+    def redraw(self):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
         self.redrawIndicator()
         self.redrawText()
@@ -71,13 +109,13 @@ class Metronome:
             MetronomeState.idle: '#444444',
             MetronomeState.work: '#444444',
             MetronomeState.blink: '#444444',
-            MetronomeState.set: '#ffeb3b',
+            MetronomeState.set: '#f7a713',
         }
         innerStyles = {
-            MetronomeState.idle: '#666666',
+            MetronomeState.idle: '#444444',
             MetronomeState.work: '#666666',
             MetronomeState.blink: '#ffffff',
-            MetronomeState.set: '#ffeb3b',
+            MetronomeState.set: '#f7a713',
         }
 
         draw.clearRect(self.left, self.top, 1, 1)
@@ -92,7 +130,9 @@ class Metronome:
             MetronomeState.set: '#ff9800',
         }
 
+        bpm = self.bpm if self.state != MetronomeState.set else self._inputBpm
+
         x = str(self.left + 1) + 'cw + 6'
         y = self.top + 0.5
         draw.clearRect(self.left + 1, self.top, self.WIDTH - 1, 1)
-        draw.text(str(self.bpm) + 'bpm', x, y, styles[self.state])
+        draw.text(str(bpm) + 'bpm', x, y, styles[self.state])

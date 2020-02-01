@@ -36,7 +36,50 @@ def update():
 def bPressed(event):
     metronome.toggle()
 
+def setBpmPressed():
+    metronome.changeBpm()
+
+def digitPressed(event):
+    # some strange arrows bug !!!
+    if (event.name == 'up'
+    or event.name == 'down'
+    or event.name == 'left'
+    or event.name == 'right'
+    or event.name == 'page up'
+    or event.name == 'page down'):
+        return
+    metronome.inputBpmDigit(int(event.name))
+
+def backspacePressed(event):     
+    metronome.backspaceBpmDigit()
+
+def enterPressed(event):
+    metronome.confirm()
+
+def spacePressed(event):
+    metronome.confirm()
+
+def escPressed(event):
+    metronome.cancel()
+
 keyboard.on_press_key('b', bPressed)
+keyboard.add_hotkey('s + b', setBpmPressed)
+
+keyboard.on_press_key('1', digitPressed)
+keyboard.on_press_key('2', digitPressed)
+keyboard.on_press_key('3', digitPressed)
+keyboard.on_press_key('4', digitPressed)
+keyboard.on_press_key('5', digitPressed)
+keyboard.on_press_key('6', digitPressed)
+keyboard.on_press_key('7', digitPressed)
+keyboard.on_press_key('8', digitPressed)
+keyboard.on_press_key('9', digitPressed)
+keyboard.on_press_key('0', digitPressed)
+
+keyboard.on_press_key('backspace', backspacePressed)
+keyboard.on_press_key('enter', enterPressed)
+keyboard.on_press_key('space', spacePressed)
+keyboard.on_press_key('esc', escPressed)
 
 def main():
     pygame.init()
