@@ -1,5 +1,8 @@
 import enum
 import math
+import queue
+import numpy as np
+import sounddevice as sd
 import drawing as draw
 
 class TrackState(enum.Enum):
@@ -18,6 +21,8 @@ class Track:
         self.WIDTH = 1
         self.HEIGHT = 17
         self._initDraw = False
+        self.bufferSize = sd.default.blocksize
+        self.memory = np.empty([2000, 64, 2], )
 
     def toggleChangeSize(self):
         if self.state == TrackState.default: 
@@ -57,6 +62,10 @@ class Track:
         if needredraw:
             self.redraw()
             self._initDraw = True
+
+    def resetMemory(self, bpm):
+        size = self.samplerate * ((60 / bpm) * 16)
+        self.memory = np.empty([size, self.blocksize, 2], )
 
     def redraw(self):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)

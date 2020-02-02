@@ -3,6 +3,7 @@ import pygame
 import drawing as draw
 import keyboard
 import sounddevice as sd
+import customevents as events
 from wire import Wire
 from metronome import Metronome
 from track import Track
@@ -51,6 +52,9 @@ def close():
 
 def wireCallback(indata, outdata, frames, timeinfo, status):
     outdata[:] = indata
+
+def bpmChanged(bpm):
+    print(bpm)
 
 def bPressed(event):
     metronome.toggle()
@@ -151,6 +155,7 @@ def main():
             if event.type == pygame.QUIT:
                 close()
                 running = False
-
+            elif event.type == events.BPM_CHANGED_EVENT:
+                bpmChanged(event.dict['bpm'])
 if __name__ == "__main__":
     main()

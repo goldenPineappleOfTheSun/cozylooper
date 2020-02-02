@@ -1,9 +1,11 @@
 import enum
 import math
 import keyboard
+import pygame
 import soundfile as sf
 import sounddevice as sd
 import drawing as draw
+import customevents as events
 
 class MetronomeState(enum.Enum):
     error = 0,
@@ -24,13 +26,14 @@ class Metronome:
         self.state = MetronomeState.idle
         self._elapsedTicks = 0
         self.bias = 120
+        self.needRedraw = True
 
     def update(self, ticks):
         interval = 60 / self.bpm
         elapsed = (ticks + self.bias) / 1000
         _elapsedTicks = math.floor(elapsed / interval)
 
-        needRedraw = False
+        needRedraw = self.needRedraw
 
         if self.state == MetronomeState.work and elapsed % interval <= interval / 10:
             self.state = MetronomeState.blink
@@ -50,6 +53,7 @@ class Metronome:
 
         if needRedraw == True or _elapsedTicks <= 1:
             self.redraw()
+            self.needRedraw = False
 
     def playSound(self):
         sd.play(self.sound * 0.2, self.soundSamplerate)
@@ -75,6 +79,8 @@ class Metronome:
         self.setBpm(self._inputBpm)
         self.state = MetronomeState.idle
         self.redraw()
+        pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self._inputBpm}))
+        self.needRedraw = True
 
     def cancel(self):
         self._inputBpm = self.bpm
