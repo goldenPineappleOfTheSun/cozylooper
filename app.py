@@ -1,12 +1,16 @@
+from multiprocessing import Process
 import pygame
 import drawing as draw
 import keyboard
+import sounddevice as sd
+from wire import Wire
 from metronome import Metronome
 from track import Track
 from tonearm import Tonearm
 
 """ Main Loop """
 
+wire = Wire(inputDevice = 8, outputDevice = 8)
 metronome = Metronome(120, left = 16, top = 1)
 tracks = [
     Track(0, 1, 1),
@@ -39,6 +43,9 @@ def update():
     for track in tracks:
         track.update()
     draw.update()
+
+def close():
+    print('stop!')
 
 def bPressed(event):
     metronome.toggle()
@@ -137,7 +144,11 @@ def main():
         update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                close()
                 running = False
 
-if __name__=="__main__":
-    main()
+if __name__ == "__main__":
+    pygameProc = Process(target = main)
+    pygameProc.start()
+    wireProc = Process(target = wire.start())
+    wireProc.start()
