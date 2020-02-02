@@ -29,7 +29,8 @@ tonearmA = Tonearm(size = 16, left = 5, top = 1)
 tonearmB = Tonearm(size = 16, left = 10, top = 1)
 clock = pygame.time.Clock()
 
-def start():    
+def start():   
+    wire.start() 
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
 
@@ -45,6 +46,7 @@ def update():
     draw.update()
 
 def close():
+    wire.stop()
     print('stop!')
 
 def bPressed(event):
@@ -148,7 +150,4 @@ def main():
                 running = False
 
 if __name__ == "__main__":
-    pygameProc = Process(target = main)
-    pygameProc.start()
-    wireProc = Process(target = wire.start())
-    wireProc.start()
+    main()

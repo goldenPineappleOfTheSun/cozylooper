@@ -1,5 +1,4 @@
 import numpy as np
-from multiprocessing import Process
 import sounddevice as sd
 import time
 
@@ -32,11 +31,11 @@ class Wire():
 
 
     def start(self):     
-        with  sd.Stream(device=(self.inputDevice, self.outputDevice), 
+        self.stream = sd.Stream(device=(self.inputDevice, self.outputDevice), 
                                 channels=2,
                                 samplerate=self.samplerate, 
-                                callback = self.callback):
-            sd.sleep(int(10000))
+                                callback = self.callback)
+        self.stream.start()
 
     def stop(self):
         self.stream.close()
