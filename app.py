@@ -30,7 +30,7 @@ tonearmB = Tonearm(size = 16, left = 10, top = 1)
 clock = pygame.time.Clock()
 
 def start():   
-    wire.start() 
+    wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
 
@@ -48,6 +48,9 @@ def update():
 def close():
     wire.stop()
     print('stop!')
+
+def wireCallback(indata, outdata, frames, timeinfo, status):
+    outdata[:] = indata
 
 def bPressed(event):
     metronome.toggle()
