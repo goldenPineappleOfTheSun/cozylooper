@@ -8,7 +8,9 @@ import drawing as draw
 class TrackState(enum.Enum):
     error = 0,
     default = 1,
-    setSize = 2
+    setSize = 2,
+    record = 3,
+    play = 4
 
 class Track:
     def __init__(self, n, left = 0, top = 0):
@@ -31,6 +33,16 @@ class Track:
             self.state = TrackState.default
         self.redraw()
 
+    def toggleRecord(self):
+        self.cancel()
+        self.state = TrackState.record if self.state != TrackState.record else TrackState.default
+        self.redraw()
+
+    def togglePlay(self):
+        self.cancel()
+        self.state = TrackState.play if self.state != TrackState.play else TrackState.default
+        self.redraw()
+
     def decreaseSize(self):
         if self.state != TrackState.setSize:
             return
@@ -48,14 +60,16 @@ class Track:
         self.redraw()
 
     def confirm(self):
-        self.size = self._inputSize
-        self.state = TrackState.default
-        self.redraw()
+        if self.state == TrackState.setSize:
+            self.size = self._inputSize
+            self.state = TrackState.default
+            self.redraw()
 
     def cancel(self):
-        self._inputSize = self.size
-        self.state = TrackState.default
-        self.redraw()
+        if self.state == TrackState.setSize:
+            self._inputSize = self.size
+            self.state = TrackState.default
+            self.redraw()
 
     def update(self):
         needredraw = not self._initDraw
@@ -63,9 +77,38 @@ class Track:
             self.redraw()
             self._initDraw = True
 
-    def resetMemory(self, bpm):
-        size = self.samplerate * ((60 / bpm) * 16)
-        self.memory = np.empty([size, self.blocksize, 2], )
+    def write(self, 
+              time,
+              bpm,
+              samplerate = 44100,   
+              blocksize = sd.default.blocksize, 
+              channels = 2):
+        self.memory[0] = 0 
+
+    def read(self, 
+             time,
+             bpm,
+             samplerate = 44100,   
+             blocksize = sd.default.blocksize, 
+             channels = 2):
+        return np.empty(blocksize)
+
+    def canWrite(self):
+        return self.state == TrackState.record
+
+    def canRead(self):
+        return self.state == TrackState.play
+
+    """
+    deviceParams = (samplerate, blocksize, channels)
+    """
+    def resetMemory(self, 
+                    bpm,
+                    samplerate = 44100,   
+                    blocksize = sd.default.blocksize, 
+                    channels = 2):
+        size = int(samplerate * ((60 / bpm) * 16))
+        self.memory = np.empty([size, blocksize, channels], )
 
     def redraw(self):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
@@ -77,6 +120,8 @@ class Track:
         styles = {
             TrackState.default: '#dac1a3 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
+            TrackState.record: '#f78181 1p #ffffff',
+            TrackState.play: '#acd872 1p #ffffff'
         }
 
         draw.clearRect(self.left, self.top, self.WIDTH, 1)
@@ -86,6 +131,8 @@ class Track:
         styles = {
             TrackState.default: '#ab9b87 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
+            TrackState.record: '#f78181 1p #ffffff',
+            TrackState.play: '#acd872 1p #ffffff'
         }
 
         size = self.size if self.state != TrackState.setSize else self._inputSize

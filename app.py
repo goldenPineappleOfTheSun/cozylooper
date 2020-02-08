@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import pygame
+import time
 import drawing as draw
 import keyboard
 import sounddevice as sd
@@ -10,6 +11,9 @@ from track import Track
 from tonearm import Tonearm
 
 """ Main Loop """
+streamTimeStart = 0
+keyboardMap = []
+_suspitiousFunctionKeysLag = 100
 
 wire = Wire(inputDevice = 8, outputDevice = 8)
 metronome = Metronome(120, left = 16, top = 1)
@@ -46,15 +50,36 @@ def update():
         track.update()
     draw.update()
 
+    global _suspitiousFunctionKeysLag
+    _suspitiousFunctionKeysLag -= 1
+
 def close():
     wire.stop()
     print('stop!')
 
 def wireCallback(indata, outdata, frames, timeinfo, status):
+    global streamTimeStart
     outdata[:] = indata
+    if streamTimeStart == 0:
+        streamTimeStart = timeinfo.inputBufferAdcTime
+    elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
+    for track in tracks:
+        if track.canWrite():
+            track.write(elapsed, metronome.bpm)
+        if track.canRead():
+            track.write(elapsed, metronome.bpm)
+
+def playTrack(n, e):
+    if keyboard.is_pressed('space'):
+        return
+    if keyboard.is_pressed('s'):
+        return
+    if _suspitiousFunctionKeysLag < 0:
+        tracks[n].togglePlay()
 
 def bpmChanged(bpm):
-    print(bpm)
+    for track in tracks:
+        track.resetMemory(bpm)
 
 def bPressed(event):
     metronome.toggle()
@@ -115,18 +140,44 @@ keyboard.on_press_key('0', digitPressed)
 keyboard.on_press_key('up', arrowUpPressed)
 keyboard.on_press_key('down', arrowDownPressed)
 
-keyboard.add_hotkey('s + f1', lambda: tracks[0].toggleChangeSize())
-keyboard.add_hotkey('s + f2', lambda: tracks[1].toggleChangeSize())
-keyboard.add_hotkey('s + f3', lambda: tracks[2].toggleChangeSize())
-keyboard.add_hotkey('s + f4', lambda: tracks[3].toggleChangeSize())
-keyboard.add_hotkey('s + f5', lambda: tracks[4].toggleChangeSize())
-keyboard.add_hotkey('s + f6', lambda: tracks[5].toggleChangeSize())
-keyboard.add_hotkey('s + f7', lambda: tracks[6].toggleChangeSize())
-keyboard.add_hotkey('s + f8', lambda: tracks[7].toggleChangeSize())
-keyboard.add_hotkey('s + f9', lambda: tracks[8].toggleChangeSize())
-keyboard.add_hotkey('s + f10', lambda: tracks[9].toggleChangeSize())
-keyboard.add_hotkey('s + f11', lambda: tracks[10].toggleChangeSize())
-keyboard.add_hotkey('s + f12', lambda: tracks[11].toggleChangeSize())
+keyboard.add_hotkey('s + f1', tracks[0].toggleChangeSize)
+keyboard.add_hotkey('s + f2', tracks[1].toggleChangeSize)
+keyboard.add_hotkey('s + f3', tracks[2].toggleChangeSize)
+keyboard.add_hotkey('s + f4', tracks[3].toggleChangeSize)
+keyboard.add_hotkey('s + f5', tracks[4].toggleChangeSize)
+keyboard.add_hotkey('s + f6', tracks[5].toggleChangeSize)
+keyboard.add_hotkey('s + f7', tracks[6].toggleChangeSize)
+keyboard.add_hotkey('s + f8', tracks[7].toggleChangeSize)
+keyboard.add_hotkey('s + f9', tracks[8].toggleChangeSize)
+keyboard.add_hotkey('s + f10', tracks[9].toggleChangeSize)
+keyboard.add_hotkey('s + f11', tracks[10].toggleChangeSize)
+keyboard.add_hotkey('s + f12', tracks[11].toggleChangeSize)
+
+keyboard.add_hotkey('space + f1', tracks[0].toggleRecord)
+keyboard.add_hotkey('space + f2', tracks[1].toggleRecord)
+keyboard.add_hotkey('space + f3', tracks[2].toggleRecord)
+keyboard.add_hotkey('space + f4', tracks[3].toggleRecord)
+keyboard.add_hotkey('space + f5', tracks[4].toggleRecord)
+keyboard.add_hotkey('space + f6', tracks[5].toggleRecord)
+keyboard.add_hotkey('space + f7', tracks[6].toggleRecord)
+keyboard.add_hotkey('space + f8', tracks[7].toggleRecord)
+keyboard.add_hotkey('space + f9', tracks[8].toggleRecord)
+keyboard.add_hotkey('space + f10', tracks[9].toggleRecord)
+keyboard.add_hotkey('space + f11', tracks[10].toggleRecord)
+keyboard.add_hotkey('space + f12', tracks[11].toggleRecord)
+
+keyboard.on_press_key('f1', lambda e: playTrack(0, e))
+keyboard.on_press_key('f2', lambda e: playTrack(1, e))
+keyboard.on_press_key('f3', lambda e: playTrack(2, e))
+keyboard.on_press_key('f4', lambda e: playTrack(3, e))
+keyboard.on_press_key('f5', lambda e: playTrack(4, e))
+keyboard.on_press_key('f6', lambda e: playTrack(5, e))
+keyboard.on_press_key('f7', lambda e: playTrack(6, e))
+keyboard.on_press_key('f8', lambda e: playTrack(7, e))
+keyboard.on_press_key('f9', lambda e: playTrack(8, e))
+keyboard.on_press_key('f10', lambda e: playTrack(9, e))
+keyboard.on_press_key('f11', lambda e: playTrack(10, e))
+keyboard.on_press_key('f12', lambda e: playTrack(11, e))
 
 keyboard.on_press_key('backspace', backspacePressed)
 keyboard.on_press_key('enter', enterPressed)
