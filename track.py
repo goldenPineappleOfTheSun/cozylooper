@@ -83,7 +83,7 @@ class Track:
              frames = sd.default.blocksize, 
              channels = 2):
         result = np.array(self.memory[self._pos:self._pos+frames])
-        self._pos = (self._pos + frames % self._memorySize)
+        self._pos = (self._pos + frames) % self._memorySize
         return result
 
     def redraw(self):

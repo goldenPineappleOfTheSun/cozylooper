@@ -36,6 +36,8 @@ tonearmB = Tonearm(size = 16, left = 10, top = 1)
 clock = pygame.time.Clock()
 
 def start():   
+    global metronome
+    bpmChanged(metronome.bpm)
     wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
@@ -43,10 +45,10 @@ def start():
 def update():
     ticks = pygame.time.get_ticks()
     metronome.update(ticks)
-    tonearmA.setPos(metronome.bpm, ticks / 1000)
+    """tonearmA.setPos(metronome.bpm, ticks / 1000)
     tonearmA.update()
     tonearmB.setPos(metronome.bpm, ticks / 1000)
-    tonearmB.update()
+    tonearmB.update()"""
     for track in tracks:
         track.update()
     draw.update()
@@ -72,6 +74,8 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
             if read.shape[0] != outdata.shape[0]:
                 read = np.resize(read, [outdata.shape[0], outdata.shape[1]])
             outdata += read
+    tonearmA.moveBy(frames, metronome.bpm)
+    tonearmB.moveBy(frames, metronome.bpm)
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
@@ -84,6 +88,8 @@ def playTrack(n, e):
 def bpmChanged(bpm):
     for track in tracks:
         track.resetMemory(bpm)
+    tonearmA.resetSize(bpm)
+    tonearmB.resetSize(bpm)
 
 def bPressed(event):
     metronome.toggle()

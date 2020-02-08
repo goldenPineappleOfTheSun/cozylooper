@@ -25,7 +25,7 @@ class Metronome:
         self.sound, self.soundSamplerate = sf.read('metronome_tick.wav', dtype='float32')
         self.state = MetronomeState.idle
         self._elapsedTicks = 0
-        self.bias = 120
+        self.bias = 0
         self.needRedraw = True
 
     def update(self, ticks):

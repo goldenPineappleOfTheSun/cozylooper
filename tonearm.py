@@ -7,33 +7,32 @@ class Tonearm:
         self.left = left
         self.top = top
         self.WIDTH = width
-        self._initDraw = False
         self.pos = 0
+        self._pointer = 0
         self._lastPosition = 0
-
-    def update(self):        
-        needredraw = not self._initDraw
-
-        if abs(self._lastPosition - self.pos) > 0:
-            needredraw = True
-
-        if needredraw:
-            self.redraw()
-            self._initDraw = True
-
-    def setPos(self, bpm = 120, time = 0, pos = None):
-        if pos == None:
-            timePerBeat = 60 / bpm
-            timePreTrack = timePerBeat * 16
-            self.pos = (time % timePreTrack) / (timePerBeat * 16)
-        else:
-            self.pos = pos
-
+        self._size = 44100
 
     def redraw(self):
-        lastY = self.top + 1 + self._lastPosition * self.size
-        y = self.top + 1 + self.pos * self.size
-        draw.clearRect(self.left, min(lastY, y), self.WIDTH, max(lastY, y))
-        draw.line(self.left, y, self.left + 1, y, '#000000')
-        self._lastPosition = self.pos
+        y = self.top + 1 + self.pos
+        draw.clearRect(self.left, y - 0.2, self.WIDTH, y + 0.2)
+        draw.line(self.left, y, self.left + self.WIDTH, y, '#000000')
+
+    def resetSize(self, 
+                  bpm,
+                  samplerate = 44100,   
+                  channels = 2):
+        size = int(samplerate * (60 / bpm) * 16)
+        self._size = size
+
+    def moveBy(self, 
+               step,
+               bpm,
+               samplerate = 44100,   
+               channels = 2):
+        self._pointer = (self._pointer + step) % self._size
+        pixelContains = self._size / (draw.ch * 16)
+        if abs(self._pointer - self._lastPosition) > pixelContains:
+            self._lastPosition = self._pointer
+            self.pos = self._pointer / (self._size / 16)
+            self.redraw()
 
