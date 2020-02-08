@@ -77,7 +77,8 @@ class Track:
             self.redraw()
             self._initDraw = True
 
-    def write(self, 
+    def write(self,
+              indata, 
               time,
               bpm,
               samplerate = 44100,   

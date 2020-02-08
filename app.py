@@ -65,9 +65,9 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(elapsed, metronome.bpm)
+            track.write(indata, elapsed, metronome.bpm)
         if track.canRead():
-            track.write(elapsed, metronome.bpm)
+            read = track.read(elapsed, metronome.bpm)
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
