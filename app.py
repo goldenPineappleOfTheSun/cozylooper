@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import pygame
+import numpy as np
 import time
 import drawing as draw
 import keyboard
@@ -65,9 +66,12 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(indata, elapsed, metronome.bpm)
+            track.write(indata, elapsed, metronome.bpm, frames = frames)
         if track.canRead():
-            read = track.read(elapsed, metronome.bpm)
+            read = track.read(elapsed, metronome.bpm, frames = frames)
+            if read.shape[0] != outdata.shape[0]:
+                read = np.resize(read, [outdata.shape[0], outdata.shape[1]])
+            outdata += read
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
