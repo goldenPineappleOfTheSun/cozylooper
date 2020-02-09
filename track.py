@@ -119,6 +119,9 @@ class Track:
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
         draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
 
+        if self.state == TrackState.play or self.state == TrackState.record:
+            draw.rectangle(self.left + 0.4, self.top + 1 + 0.25 + self.beat, 0.3, size - self.beat - 0.7, '#ffffff')
+
     def setBehaviour(self, beh):        
         self.behaviour = beh
 
@@ -171,6 +174,8 @@ class Track:
         if self.beat == 0:
             self.onTrackEnded()
             self.onTrackStarted()
+        if self.state == TrackState.play or self.state == TrackState.record:
+            self.redraw()
         self.behaviour.onBeat(self)
 
     def onBar(self):

@@ -10,6 +10,10 @@ class LoopDefault:
     def onBar(track):
     	if track.state == TrackState.readyToRecord:
     		track.state = TrackState.record
+    		track.beat = 0
+    		track.redraw()
+    	if track.state == TrackState.readyToPlay:
+    		track.state = TrackState.play
     		track.redraw()
 
     def onTrackStarted(track):
@@ -18,9 +22,6 @@ class LoopDefault:
     def onTrackEnded(track):
     	if track.state == TrackState.record:
     		track.state = TrackState.default
-    		track.redraw()
-    	if track.state == TrackState.readyToPlay:
-    		track.state = TrackState.play
     		track.redraw()
  
     def onGlobalLoop(track):
