@@ -23,6 +23,7 @@ class Track:
         self._pos = 0
         self._memorySize = 0
         self.behaviour = behaviour
+        self.playAfterRecord = False
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -100,8 +101,13 @@ class Track:
             TrackState.awaitingChanges: '#f5cb55 1p #f5cb55',
         }
 
+        style = styles[self.state]
+
+        if self.playAfterRecord:
+            style = styles[TrackState.readyToPlay]
+
         draw.clearRect(self.left, self.top, self.WIDTH, 1)
-        draw.rectangle(self.left, self.top, 1, 1, styles[self.state])
+        draw.rectangle(self.left, self.top, 1, 1, style)
 
     def redrawTrack(self):
         styles = {
@@ -142,10 +148,22 @@ class Track:
 
     def togglePlay(self):
         self.cancel()
-        if self.state != TrackState.play:
-            self.onPlayDemanded()
-        else:
+        if self.state == TrackState.play:
             self.onPlayStop()
+        elif self.state == TrackState.record:
+            if self.playAfterRecord == False:
+                self.playAfterRecord = True
+            else:
+                self.playAfterRecord = False
+            self.redraw()
+        elif self.state == TrackState.readyToRecord:
+            if self.playAfterRecord == False:
+                self.playAfterRecord = True
+            else:
+                self.playAfterRecord = False
+            self.redraw()
+        else:
+            self.onPlayDemanded()
         self._pos = 0
 
     def update(self):
@@ -174,7 +192,8 @@ class Track:
         if self.beat == 0:
             self.onTrackEnded()
             self.onTrackStarted()
-        if self.state == TrackState.play or self.state == TrackState.record:
+        needDraw = self.state == TrackState.play or self.state == TrackState.record
+        if needDraw:
             self.redraw()
         self.behaviour.onBeat(self)
 
