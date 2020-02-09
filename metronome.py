@@ -27,6 +27,7 @@ class Metronome:
         self._elapsedTicks = 0
         self.bias = 0
         self.needRedraw = True
+        #self._midiPlayer = None
 
     def update(self, ticks):
         interval = 60 / self.bpm
@@ -41,6 +42,8 @@ class Metronome:
         if self.state == MetronomeState.blink and elapsed % interval > interval / 10:
             self.state = MetronomeState.work
             needRedraw = True
+            #if self._midiPlayer != None:
+            #    self._midiPlayer.note_off(64, 127)
         if self.state == MetronomeState.set:
             needRedraw = True
 
@@ -56,6 +59,10 @@ class Metronome:
             self.needRedraw = False
 
     def playSound(self):
+        #if self._midiPlayer == None:
+        #    self._midiPlayer = pygame.midi.Output(0)
+        #self._midiPlayer.set_instrument(0)
+        #self._midiPlayer.note_on(64, 127)
         sd.play(self.sound * 0.2, self.soundSamplerate)
 
     def enable(self):

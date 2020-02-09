@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import pygame
+import pygame.midi
 import numpy as np
 import time
 import drawing as draw
@@ -10,6 +11,7 @@ from wire import Wire
 from metronome import Metronome
 from track import Track
 from tonearm import Tonearm
+from loopDefault import LoopDefault
 
 """ Main Loop """
 streamTimeStart = 0
@@ -19,18 +21,18 @@ _suspitiousFunctionKeysLag = 100
 wire = Wire(inputDevice = 8, outputDevice = 8)
 metronome = Metronome(120, left = 16, top = 1)
 tracks = [
-    Track(0, 1, 1),
-    Track(1, 2, 1),
-    Track(2, 3, 1),
-    Track(3, 4, 1),
-    Track(4, 6, 1),
-    Track(5, 7, 1),
-    Track(6, 8, 1),
-    Track(7, 9, 1),
-    Track(8, 11, 1),
-    Track(9, 12, 1),
-    Track(10, 13, 1),
-    Track(11, 14, 1),]
+    Track(0, LoopDefault, 1, 1),
+    Track(1, LoopDefault, 2, 1),
+    Track(2, LoopDefault, 3, 1),
+    Track(3, LoopDefault, 4, 1),
+    Track(4, LoopDefault, 6, 1),
+    Track(5, LoopDefault, 7, 1),
+    Track(6, LoopDefault, 8, 1),
+    Track(7, LoopDefault, 9, 1),
+    Track(8, LoopDefault, 11, 1),
+    Track(9, LoopDefault, 12, 1),
+    Track(10, LoopDefault, 13, 1),
+    Track(11, LoopDefault, 14, 1),]
 tonearmA = Tonearm(size = 16, left = 5, top = 1)
 tonearmB = Tonearm(size = 16, left = 10, top = 1)
 clock = pygame.time.Clock()
@@ -196,6 +198,7 @@ keyboard.on_press_key('esc', escPressed)
 
 def main():
     pygame.init()
+    #pygame.midi.init()
     draw.init(30, 20)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)

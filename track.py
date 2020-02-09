@@ -1,19 +1,13 @@
-import enum
 import math
 import queue
+import types
 import numpy as np
 import sounddevice as sd
 import drawing as draw
-
-class TrackState(enum.Enum):
-    error = 0,
-    default = 1,
-    setSize = 2,
-    record = 3,
-    play = 4
+from trackStates import TrackState
 
 class Track:
-    def __init__(self, n, left = 0, top = 0):
+    def __init__(self, n, behaviour, left = 0, top = 0):
         self.n = n
         self.left = left
         self.top = top
@@ -27,6 +21,7 @@ class Track:
         self.memory = np.empty([2000, 64, 2], )
         self._pos = 0
         self._memorySize = 0
+        self.setBehaviour(behaviour)
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -97,6 +92,7 @@ class Track:
             TrackState.default: '#dac1a3 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
             TrackState.record: '#f78181 1p #ffffff',
+            TrackState.readyToRecord: '#dac1a3 1p #ffffff',
             TrackState.play: '#acd872 1p #ffffff'
         }
 
@@ -108,6 +104,7 @@ class Track:
             TrackState.default: '#ab9b87 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
             TrackState.record: '#f78181 1p #ffffff',
+            TrackState.readyToRecord: '#ab9b87 5p #f78181',
             TrackState.play: '#acd872 1p #ffffff'
         }
 
@@ -115,6 +112,12 @@ class Track:
 
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
         draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
+
+    def setBehaviour(self, beh):        
+        self.onRecordDemanded = types.MethodType(beh.onRecordDemanded, self)
+        self.onRecordDisabled = types.MethodType(beh.onRecordDisabled, self)
+        self.onPlayDemanded = types.MethodType(beh.onPlayDemanded, self)
+        self.onPlayStop = types.MethodType(beh.onPlayStop, self)
 
     def toggleChangeSize(self):
         if self.state == TrackState.default: 
@@ -125,13 +128,19 @@ class Track:
 
     def toggleRecord(self):
         self.cancel()
-        self.state = TrackState.record if self.state != TrackState.record else TrackState.default
+        if self.state != TrackState.record:
+            self.onRecordDemanded()
+        else:
+            self.onRecordDisabled()
         self._pos = 0
         self.redraw()
 
     def togglePlay(self):
         self.cancel()
-        self.state = TrackState.play if self.state != TrackState.play else TrackState.default
+        if self.state != TrackState.record:
+            self.onPlayDemanded()
+        else:
+            self.onPlayStop()
         self._pos = 0
         self.redraw()
 
