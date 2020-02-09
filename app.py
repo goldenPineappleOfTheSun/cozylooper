@@ -16,7 +16,7 @@ from loopDefault import LoopDefault
 """ Main Loop """
 streamTimeStart = 0
 keyboardMap = []
-_suspitiousFunctionKeysLag = 100
+_suspitiousFunctionKeysLag = 10
 
 wire = Wire(inputDevice = 8, outputDevice = 8)
 metronome = Metronome(120, left = 16, top = 1)
@@ -228,7 +228,7 @@ def main():
                     if (beat % 4) == 0:
                         track.onBar()
                     if (beat % 16) == 0:
-                        track.onTrackEnded()
+                        track.onGlobalLoop()
 
 if __name__ == "__main__":
     main()

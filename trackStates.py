@@ -7,3 +7,5 @@ class TrackState(enum.Enum):
     record = 3,
     readyToRecord = 4,
     play = 5
+    readyToPlay = 6,
+    awaitingChanges = 7,

@@ -12,6 +12,7 @@ class Track:
         self.left = left
         self.top = top
         self.size = 16
+        self.beat = 0
         self.state = TrackState.default
         self._inputSize = 16
         self.WIDTH = 1
@@ -26,6 +27,7 @@ class Track:
     def cancel(self):
         if self.state == TrackState.setSize:
             self._inputSize = self.size
+            self.beat = 0
             self.state = TrackState.default
             self.redraw()
 
@@ -38,7 +40,7 @@ class Track:
     def confirm(self):
         if self.state == TrackState.setSize:
             self.size = self._inputSize
-            self.state = TrackState.default
+            self.state = TrackState.awaitingChanges
             self.redraw()
 
     def decreaseSize(self):
@@ -93,7 +95,9 @@ class Track:
             TrackState.setSize: '#f5cb55 1p #ffffff',
             TrackState.record: '#f78181 1p #ffffff',
             TrackState.readyToRecord: '#f78181 1p #f78181',
-            TrackState.play: '#acd872 1p #ffffff'
+            TrackState.play: '#acd872 1p #ffffff',
+            TrackState.readyToPlay: '#acd872 1p #acd872',
+            TrackState.awaitingChanges: '#f5cb55 1p #f5cb55',
         }
 
         draw.clearRect(self.left, self.top, self.WIDTH, 1)
@@ -104,8 +108,10 @@ class Track:
             TrackState.default: '#ab9b87 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
             TrackState.record: '#f78181 1p #ffffff',
-            TrackState.readyToRecord: '#ab9b87 5p #f78181',
-            TrackState.play: '#acd872 1p #ffffff'
+            TrackState.readyToRecord: '#ffffff 5p #f78181',
+            TrackState.play: '#acd872 1p #ffffff',
+            TrackState.readyToPlay: '#ffffff 5p #acd872',
+            TrackState.awaitingChanges: '#ffffff 5p #f5cb55',
         }
 
         size = self.size if self.state != TrackState.setSize else self._inputSize
@@ -161,26 +167,41 @@ class Track:
     ### Begaviour
 
     def onBeat(self):
+        self.beat = (self.beat + 1) % self.size
+        if self.beat == 0:
+            self.onTrackEnded()
+            self.onTrackStarted()
         self.behaviour.onBeat(self)
 
     def onBar(self):
         self.behaviour.onBar(self)
 
     def onTrackStarted(self):
-        pass
+        self.behaviour.onTrackStarted(self)
  
     def onTrackEnded(self):
-        pass
+        self.behaviour.onTrackEnded(self)
+ 
+    def onGlobalLoop(self):
+        self.behaviour.onGlobalLoop(self)
 
     def onRecordDemanded(self):
+        if self.state == TrackState.setSize or self.state == TrackState.awaitingChanges:
+            return 
         self.behaviour.onRecordDemanded(self)
 
     def onRecordDisabled(self):
+        if self.state == TrackState.setSize or self.state == TrackState.awaitingChanges:
+            return 
         self.behaviour.onRecordDisabled(self)
 
     def onPlayDemanded(self):
+        if self.state == TrackState.setSize or self.state == TrackState.awaitingChanges:
+            return 
         self.behaviour.onPlayDemanded(self)
 
     def onPlayStop(self):
+        if self.state == TrackState.setSize or self.state == TrackState.awaitingChanges:
+            return 
         self.behaviour.onPlayStop(self)
 
