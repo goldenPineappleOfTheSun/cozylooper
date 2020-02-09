@@ -1,29 +1,38 @@
+import track
 from trackStates import TrackState
 
 class LoopDefault:
 
     """ when track started """
-    def onBeat(self):
+    def onBeat(track):
     	pass
 
-    def onBar(self):
-    	pass
+    def onBar(track):
+    	if track.state == TrackState.readyToRecord:
+    		track.state = TrackState.record
+    		track.redraw()
 
-    def onTrackStarted(self):
+    def onTrackStarted(track):
     	pass
  
-    def onTrackEnded(self):
-    	pass
+    def onTrackEnded(track):
+    	if track.state == TrackState.readyToRecord:
+    		track.state = TrackState.record
+    		track.redraw()
 
-    def onRecordDemanded(self):
-        self.state = TrackState.readyToRecord
+    def onRecordDemanded(track):
+        track.state = TrackState.readyToRecord
+        track.redraw()
 
-    def onRecordDisabled(self):
-        self.state = TrackState.default
+    def onRecordDisabled(track):
+        track.state = TrackState.default
+        track.redraw()
 
-    def onPlayDemanded(self):
-        self.state = TrackState.play
+    def onPlayDemanded(track):
+        track.state = TrackState.play
+        track.redraw()
 
-    def onPlayStop(self):
-        self.state = TrackState.default
+    def onPlayStop(track):
+        track.state = TrackState.default
+        track.redraw()
 

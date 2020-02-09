@@ -24,67 +24,27 @@ class Metronome:
         self.HEIGHT = 1
         self.sound, self.soundSamplerate = sf.read('metronome_tick.wav', dtype='float32')
         self.state = MetronomeState.idle
-        self._elapsedTicks = 0
-        self.bias = 0
-        self.needRedraw = True
-        #self._midiPlayer = None
+        self.bias = 0.7
+        self.beatNumber = 0
+        self.maxBeats = 16
+        self._lastBeatNumber = 0
+        self._pointer = 0
+        self._size = 1000
+        self.resetSize(bpm)
+        self._readyToSound = True
 
-    def update(self, ticks):
-        interval = 60 / self.bpm
-        elapsed = (ticks + self.bias) / 1000
-        _elapsedTicks = math.floor(elapsed / interval)
-
-        needRedraw = self.needRedraw
-
-        if self.state == MetronomeState.work and elapsed % interval <= interval / 10:
-            self.state = MetronomeState.blink
-            needRedraw = True
-        if self.state == MetronomeState.blink and elapsed % interval > interval / 10:
-            self.state = MetronomeState.work
-            needRedraw = True
-            #if self._midiPlayer != None:
-            #    self._midiPlayer.note_off(64, 127)
-        if self.state == MetronomeState.set:
-            needRedraw = True
-
-        if _elapsedTicks != self._elapsedTicks:
-            self._elapsedTicks = _elapsedTicks
-            metronomeEnabled = self.state == MetronomeState.work or self.state == MetronomeState.blink
-            if metronomeEnabled:
-                self.playSound()
-                # todo fire event       
-
-        if needRedraw == True or _elapsedTicks <= 1:
-            self.redraw()
-            self.needRedraw = False
-
-    def playSound(self):
-        #if self._midiPlayer == None:
-        #    self._midiPlayer = pygame.midi.Output(0)
-        #self._midiPlayer.set_instrument(0)
-        #self._midiPlayer.note_on(64, 127)
-        sd.play(self.sound * 0.2, self.soundSamplerate)
-
-    def enable(self):
-        self.state = MetronomeState.work 
-
-    def disable(self):
-        self.state = MetronomeState.idle 
-
-    def toggle(self):
-        if self.state == MetronomeState.idle or self.state == MetronomeState.set:
-            self.enable()
+    def backspaceBpmDigit(self):
+        if self._inputBpm > 9:
+            self._inputBpm = math.floor(self._inputBpm / 10)
+            self.redrawText(None)
         else:
-            self.disable()
-        self.redraw()
-
-    def changeBpm(self):
-        self._inputBpm = 0
-        self.state = MetronomeState.set
+            self._inputBpm = 0
+            self.redrawText(None)
 
     def confirm(self):
         self.setBpm(self._inputBpm)
-        self.state = MetronomeState.idle
+        if self.state == MetronomeState.set:
+            self.state = MetronomeState.idle
         self.redraw()
         pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
         self.needRedraw = True
@@ -94,24 +54,37 @@ class Metronome:
         self.state = MetronomeState.idle
         self.redraw()
 
-    def setBpm(self, bpm):
-        if bpm < 20:
-            bpm = 20
-        self.bpm = bpm
-        self.redraw()
+    def changeBpm(self):
+        self._inputBpm = 0
+        self.state = MetronomeState.set
+
+    def disable(self):
+        self.state = MetronomeState.idle 
+
+    def enable(self):
+        self.state = MetronomeState.work 
 
     def inputBpmDigit(self, n):
         if self._inputBpm < 100:
             self._inputBpm = self._inputBpm * 10 + n
             self.redrawText()
 
-    def backspaceBpmDigit(self):
-        if self._inputBpm > 9:
-            self._inputBpm = math.floor(self._inputBpm / 10)
-            self.redrawText(None)
-        else:
-            self._inputBpm = 0
-            self.redrawText(None)
+    def moveBy(self, 
+               step,
+               samplerate = 44100,   
+               channels = 2):
+        self._pointer = (self._pointer + step) % self._size
+
+    def onBeat(self):   
+        pygame.event.post(pygame.event.Event(events.BPM_TICK, {'beat': self.beatNumber}))  
+        self._readyToSound = True 
+
+    def playSound(self):
+        #if self._midiPlayer == None:
+        #    self._midiPlayer = pygame.midi.Output(0)
+        #self._midiPlayer.set_instrument(0)
+        #self._midiPlayer.note_on(64, 127)
+        sd.play(self.sound * 0.2, self.soundSamplerate)
 
     def redraw(self):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
@@ -150,3 +123,40 @@ class Metronome:
         y = self.top + 0.5
         draw.clearRect(self.left + 1, self.top, self.WIDTH - 1, 1)
         draw.text(str(bpm) + 'bpm', x, y, styles[self.state])
+
+    def resetSize(self, 
+                  bpm,
+                  samplerate = 44100,   
+                  channels = 2):
+        size = int(samplerate * (60 / bpm) * 16)
+        self._size = size
+
+    def setBpm(self, bpm):
+        if bpm < 20:
+            bpm = 20
+        self.bpm = bpm
+        self.redraw()
+        self.resetSize(self.bpm)
+
+    def toggle(self):
+        if self.state == MetronomeState.idle or self.state == MetronomeState.set:
+            self.enable()
+        else:
+            self.disable()
+        self.redraw()
+
+    def update(self):
+        beatContains = self._size / 16
+        bias = self.bias
+        beat = (self._pointer + bias) / beatContains
+        self.beatNumber = int(beat)
+        if abs(self.beatNumber - self._lastBeatNumber) > 0:
+            self._lastBeatNumber = self.beatNumber
+            self.onBeat()
+            self.redraw() 
+
+        if (bias == 0 and self._readyToSound) or (bias < 0 and (beat % 1) > (1 + self.bias) and self._readyToSound) or (bias > 0 and (beat % 1) > (self.bias) and self._readyToSound):
+            metronomeEnabled = self.state == MetronomeState.work or self.state == MetronomeState.blink     
+            if metronomeEnabled:
+                self.playSound()
+                self._readyToSound = False

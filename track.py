@@ -21,7 +21,7 @@ class Track:
         self.memory = np.empty([2000, 64, 2], )
         self._pos = 0
         self._memorySize = 0
-        self.setBehaviour(behaviour)
+        self.behaviour = behaviour
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -92,7 +92,7 @@ class Track:
             TrackState.default: '#dac1a3 1p #ffffff',
             TrackState.setSize: '#f5cb55 1p #ffffff',
             TrackState.record: '#f78181 1p #ffffff',
-            TrackState.readyToRecord: '#dac1a3 1p #ffffff',
+            TrackState.readyToRecord: '#f78181 1p #f78181',
             TrackState.play: '#acd872 1p #ffffff'
         }
 
@@ -114,10 +114,7 @@ class Track:
         draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
 
     def setBehaviour(self, beh):        
-        self.onRecordDemanded = types.MethodType(beh.onRecordDemanded, self)
-        self.onRecordDisabled = types.MethodType(beh.onRecordDisabled, self)
-        self.onPlayDemanded = types.MethodType(beh.onPlayDemanded, self)
-        self.onPlayStop = types.MethodType(beh.onPlayStop, self)
+        self.behaviour = beh
 
     def toggleChangeSize(self):
         if self.state == TrackState.default: 
@@ -133,16 +130,14 @@ class Track:
         else:
             self.onRecordDisabled()
         self._pos = 0
-        self.redraw()
 
     def togglePlay(self):
         self.cancel()
-        if self.state != TrackState.record:
+        if self.state != TrackState.play:
             self.onPlayDemanded()
         else:
             self.onPlayStop()
         self._pos = 0
-        self.redraw()
 
     def update(self):
         needredraw = not self._initDraw
@@ -162,4 +157,30 @@ class Track:
             if len(self.memory) > self._pos + i:
                 self.memory[self._pos + i] = indata[i]
         self._pos = (self._pos + frames) % self._memorySize
+
+    ### Begaviour
+
+    def onBeat(self):
+        self.behaviour.onBeat(self)
+
+    def onBar(self):
+        self.behaviour.onBar(self)
+
+    def onTrackStarted(self):
+        pass
+ 
+    def onTrackEnded(self):
+        pass
+
+    def onRecordDemanded(self):
+        self.behaviour.onRecordDemanded(self)
+
+    def onRecordDisabled(self):
+        self.behaviour.onRecordDisabled(self)
+
+    def onPlayDemanded(self):
+        self.behaviour.onPlayDemanded(self)
+
+    def onPlayStop(self):
+        self.behaviour.onPlayStop(self)
 

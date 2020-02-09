@@ -10,7 +10,7 @@ class Tonearm:
         self.pos = 0
         self._pointer = 0
         self._lastPosition = 0
-        self._size = 44100
+        self._size = 1000
 
     def redraw(self):
         y = self.top + 1 + self.pos
@@ -30,6 +30,8 @@ class Tonearm:
                samplerate = 44100,   
                channels = 2):
         self._pointer = (self._pointer + step) % self._size
+
+    def update(self):        
         pixelContains = self._size / (draw.ch * 16)
         if abs(self._pointer - self._lastPosition) > pixelContains:
             self._lastPosition = self._pointer

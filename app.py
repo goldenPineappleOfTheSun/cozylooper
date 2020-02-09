@@ -46,13 +46,11 @@ def start():
 
 def update():
     ticks = pygame.time.get_ticks()
-    metronome.update(ticks)
-    """tonearmA.setPos(metronome.bpm, ticks / 1000)
-    tonearmA.update()
-    tonearmB.setPos(metronome.bpm, ticks / 1000)
-    tonearmB.update()"""
     for track in tracks:
         track.update()
+    metronome.update()
+    tonearmA.update()
+    tonearmB.update()
     draw.update()
 
     global _suspitiousFunctionKeysLag
@@ -76,8 +74,10 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
             if read.shape[0] != outdata.shape[0]:
                 read = np.resize(read, [outdata.shape[0], outdata.shape[1]])
             outdata += read
+
     tonearmA.moveBy(frames, metronome.bpm)
     tonearmB.moveBy(frames, metronome.bpm)
+    metronome.moveBy(frames)
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
@@ -221,5 +221,14 @@ def main():
                 running = False
             elif event.type == events.BPM_CHANGED_EVENT:
                 bpmChanged(event.dict['bpm'])
+            elif event.type == events.BPM_TICK:
+                beat = event.dict['beat']
+                for track in tracks:
+                    track.onBeat()
+                    if (beat % 4) == 0:
+                        track.onBar()
+                    if (beat % 16) == 0:
+                        track.onTrackEnded()
+
 if __name__ == "__main__":
     main()
