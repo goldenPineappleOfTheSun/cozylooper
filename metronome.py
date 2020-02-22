@@ -4,6 +4,7 @@ import keyboard
 import pygame
 import soundfile as sf
 import sounddevice as sd
+import numpy as np
 import drawing as draw
 import customevents as events
 
@@ -23,12 +24,14 @@ class Metronome:
         self.WIDTH = 5
         self.HEIGHT = 1
         self.sound, self.soundSamplerate = sf.read('metronome_tick.wav', dtype='float32')
+        self._soundSize = np.shape(self.sound)[0]
         self.state = MetronomeState.idle
-        self.bias = 0.7
+        self.bias = 0.15
         self.beatNumber = 0
         self.maxBeats = 16
         self._lastBeatNumber = 0
         self._pointer = 0
+        self._soundTonearm = 0
         self._size = 1000
         self.resetSize(bpm)
         self._readyToSound = True
@@ -47,7 +50,6 @@ class Metronome:
             self.state = MetronomeState.idle
         self.redraw()
         pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
-        self.needRedraw = True
 
     def cancel(self):
         self._inputBpm = self.bpm
@@ -84,7 +86,9 @@ class Metronome:
         #    self._midiPlayer = pygame.midi.Output(0)
         #self._midiPlayer.set_instrument(0)
         #self._midiPlayer.note_on(64, 127)
-        sd.play(self.sound * 0.2, self.soundSamplerate)
+        #sd.play(self.sound * 0.2, self.soundSamplerate)
+        #print(np.shape(self.sound))
+        self._soundTonearm = 0
 
     def redraw(self):
         draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
@@ -137,6 +141,13 @@ class Metronome:
         self.bpm = bpm
         self.redraw()
         self.resetSize(self.bpm)
+
+    def readSound(self, frames):
+        if self._soundTonearm > self._soundSize:
+            return np.array([])
+        result = np.array(self.sound[self._soundTonearm:self._soundTonearm+frames])
+        self._soundTonearm = self._soundTonearm + frames
+        return result
 
     def toggle(self):
         if self.state == MetronomeState.idle or self.state == MetronomeState.set:

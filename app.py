@@ -72,14 +72,20 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
         if track.canWrite():
             track.write(indata, elapsed, metronome.bpm, frames = frames)
         if track.canRead():
-            read = track.read(elapsed, metronome.bpm, frames = frames)
-            if read.shape[0] != outdata.shape[0]:
-                read = np.resize(read, [outdata.shape[0], outdata.shape[1]])
-            outdata += read
+            read = track.read(elapsed, metronome.bpm, frames = frames)            
+            outdata += reshapeSound(read, outdata.shape)
+    read = metronome.readSound(frames)
+    outdata += reshapeSound(read, outdata.shape)
 
     tonearmA.moveBy(frames, metronome.bpm)
     tonearmB.moveBy(frames, metronome.bpm)
     metronome.moveBy(frames)
+
+def reshapeSound(sound, shape):
+    if sound.shape[0] != shape[0]:
+        sound = np.resize(sound, [shape[0], shape[1]])
+    return sound
+
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):

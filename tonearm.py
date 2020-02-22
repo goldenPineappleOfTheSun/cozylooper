@@ -19,12 +19,18 @@ class Tonearm:
         draw.clearRect(self.left, y, self.WIDTH, y)
         draw.rectangle(self.left + 0.15, y + 0.2, 0.8, 0.8, '#ab9b87')
 
+    def redrawWhole(self):
+        y = self.top + 1 + math.floor(self.pos)
+        draw.clearRect(self.left, self.top + 1, self.WIDTH, 16)
+        draw.rectangle(self.left + 0.15, y + 0.2, 0.8, 0.8, '#ab9b87')
+
     def resetSize(self, 
                   bpm,
                   samplerate = 44100,   
                   channels = 2):
         size = int(samplerate * (60 / bpm) * 16)
         self._size = size
+        self.redrawWhole()
 
     def moveBy(self, 
                step,
