@@ -13,9 +13,11 @@ class Tonearm:
         self._size = 1000
 
     def redraw(self):
-        y = self.top + 1 + self.pos
-        draw.clearRect(self.left, y - 0.2, self.WIDTH, y + 0.2)
-        draw.line(self.left, y, self.left + self.WIDTH, y, '#000000')
+        y = self.top + 1 + math.floor(self.pos)
+        prevy = self.top + 1 + math.floor((self.pos - 1) % 16)
+        draw.clearRect(self.left, prevy, self.WIDTH, y)
+        draw.clearRect(self.left, y, self.WIDTH, y)
+        draw.rectangle(self.left + 0.15, y + 0.2, 0.8, 0.8, '#ab9b87')
 
     def resetSize(self, 
                   bpm,

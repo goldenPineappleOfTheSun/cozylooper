@@ -49,12 +49,14 @@ def update():
     for track in tracks:
         track.update()
     metronome.update()
-    tonearmA.update()
-    tonearmB.update()
     draw.update()
 
     global _suspitiousFunctionKeysLag
     _suspitiousFunctionKeysLag -= 1
+
+def tick():    
+    tonearmA.update()
+    tonearmB.update()
 
 def close():
     wire.stop()
@@ -223,6 +225,7 @@ def main():
                 bpmChanged(event.dict['bpm'])
             elif event.type == events.BPM_TICK:
                 beat = event.dict['beat']
+                tick()
                 for track in tracks:
                     track.onBeat()
                     if (beat % 4) == 0:
