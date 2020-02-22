@@ -14,9 +14,12 @@ colors = {
     '@fore': '#444444',
     '@light': '#dac1a3',
     '@set': '#f5cb55',
+    '@lightset': '#fbd979',
     '@darkset': '#ff9800',
     '@play': '#acd872',
-    '@record': '#f78181'
+    '@lightplay': '#c5ea93',
+    '@record': '#f78181',
+    '@lightrecord': '#ff90aa'
 }
 
 _fonts = {

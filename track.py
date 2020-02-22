@@ -15,9 +15,10 @@ class Track:
         self.beat = 0
         self.state = TrackState.default
         self._inputSize = 16
+        self._isHalfBeat = False
         self.WIDTH = 1
         self.HEIGHT = 17
-        self._initDraw = False
+        self._initDraw = True
         self.bufferSize = sd.default.blocksize
         self.memory = np.empty([2000, 64, 2], )
         self._pos = 0
@@ -95,9 +96,9 @@ class Track:
             TrackState.default: '@light 1p @clear',
             TrackState.setSize: '@set 1p @clear',
             TrackState.record: '@record 1p @clear',
-            TrackState.readyToRecord: '@record 1p @record',
+            TrackState.readyToRecord: '@record 1p @record' if not self._isHalfBeat else '@lightrecord 1p @record',
             TrackState.play: '@play 1p @clear',
-            TrackState.readyToPlay: '@play 1p @play',
+            TrackState.readyToPlay: '@play 1p @play' if not self._isHalfBeat else '@lightplay 1p @play',
             TrackState.awaitingChanges: '@set 1p @set',
         }
 
@@ -114,19 +115,31 @@ class Track:
             TrackState.default: '@neutral 1p @clear',
             TrackState.setSize: '@set 1p @clear',
             TrackState.record: '@record 1p @clear',
-            TrackState.readyToRecord: '@clear 5p @record',
+            TrackState.readyToRecord: '@record 1p @record' if not self._isHalfBeat else '@lightrecord 1p @record',
             TrackState.play: '@play 1p @clear',
-            TrackState.readyToPlay: '@clear 5p @play',
-            TrackState.awaitingChanges: '@clear 5p @set',
+            TrackState.readyToPlay: '@play 1p @play' if not self._isHalfBeat else '@lightplay 1p @play',
+            TrackState.awaitingChanges: '@set 1p @clear' if not self._isHalfBeat else '@lightset 1p @clear',
+        }
+
+        backstyles = {
+            TrackState.record: '@lightrecord 1p @clear',
+            TrackState.play: '@lightplay 1p @clear',
         }
 
         size = self.size if self.state != TrackState.setSize else self._inputSize
 
-        draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
-        draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
+        tracked = self.state == TrackState.play or self.state == TrackState.record
 
-        #if self.state == TrackState.play or self.state == TrackState.record:
-        #    draw.rectangle(self.left + 0.4, self.top + 1 + 0.25 + self.beat, 0.3, size - self.beat - 0.7, '#ffffff')
+        if not tracked:
+            draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
+            draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
+        else:
+            if self.beat == 0:
+                draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
+            else:
+                draw.clearRect(self.left, self.top + self.beat + 1 - 1, self.WIDTH, 2 if self.beat < 15 else 1)
+            draw.rectangle(self.left, self.top + 1, 1, self.beat, styles[self.state])
+            draw.rectangle(self.left, self.top + self.beat + 1, 1, size - self.beat, backstyles[self.state])
 
     def setBehaviour(self, beh):        
         self.behaviour = beh
@@ -167,10 +180,10 @@ class Track:
         self._pos = 0
 
     def update(self):
-        needredraw = not self._initDraw
+        needredraw = self._initDraw
         if needredraw:
             self.redraw()
-            self._initDraw = True
+            self._initDraw = False
 
     def write(self,
               indata, 
@@ -188,17 +201,21 @@ class Track:
     ### Begaviour
 
     def onBeat(self):
+        self._isHalfBeat = False
         self.beat = (self.beat + 1) % self.size
         if self.beat == 0:
             self.onTrackEnded()
             self.onTrackStarted()
-        needDraw = self.state == TrackState.play or self.state == TrackState.record
+        needDraw = self.state == TrackState.play or self.state == TrackState.record or self.state == TrackState.readyToPlay or self.state == TrackState.readyToRecord or self.state == TrackState.awaitingChanges
         if needDraw:
             self.redraw()
         self.behaviour.onBeat(self)
 
     def onHalfBeat(self):
-        pass
+        self._isHalfBeat = True
+        needDraw = self.state == TrackState.readyToPlay or self.state == TrackState.readyToRecord or self.state == TrackState.awaitingChanges
+        if needDraw:
+            self.redraw()
 
     def onBar(self):
         self.behaviour.onBar(self)
