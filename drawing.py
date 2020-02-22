@@ -8,6 +8,17 @@ height = 16
 canvas = None
 clearColor = '#ffffff'
 
+colors = {
+    '@clear': '#ffffff',
+    '@neutral': '#ab9b87',
+    '@fore': '#444444',
+    '@light': '#dac1a3',
+    '@set': '#f5cb55',
+    '@darkset': '#ff9800',
+    '@play': '#acd872',
+    '@record': '#f78181'
+}
+
 _fonts = {
     'open-sans': 'fonts/OpenSans-Regular.ttf',
     'open-sans-bold': 'fonts/OpenSans-Bold.ttf'
@@ -87,9 +98,11 @@ class DrawStyle:
 
     def _transformColor(self, value):
         result = (0, 0, 0)
-        if (_isHexColor(value)):
+        if _isHexColor(value):
             result = _tupleFromHexColor(value)
-        else: 
+        elif _isAliasColor(value):
+            result = self._transformColor(colors[value])
+        else:
             raise Exception('unknown color format')
         return result
 
@@ -316,6 +329,9 @@ def _yFromNumber(value: int):
 
 def _isHexColor(value):
     return value[:1] == '#'
+
+def _isAliasColor(value):
+    return value[:1] == '@'
 
 def _isPoints(value):
     # this check may possible be stronger

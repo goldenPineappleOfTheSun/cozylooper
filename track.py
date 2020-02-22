@@ -53,9 +53,9 @@ class Track:
         self.redraw()
 
     def drawMeasures(self):
-        draw.line(self.left + 0.4, self.top + 1 + 8, self.left + 0.6, self.top + 1 + 8, '#ffffff')
-        draw.line(self.left + 0.45, self.top + 1 + 4, self.left + 0.55, self.top + 1 + 4, '#ffffff')
-        draw.line(self.left + 0.45, self.top + 1 + 12, self.left + 0.55, self.top + 1 + 12, '#ffffff')
+        draw.line(self.left + 0.4, self.top + 1 + 8, self.left + 0.6, self.top + 1 + 8, '@clear')
+        draw.line(self.left + 0.45, self.top + 1 + 4, self.left + 0.55, self.top + 1 + 4, '@clear')
+        draw.line(self.left + 0.45, self.top + 1 + 12, self.left + 0.55, self.top + 1 + 12, '@clear')
 
     def increaseSize(self):
         if self.state != TrackState.setSize:
@@ -92,13 +92,13 @@ class Track:
 
     def redrawTrackHeader(self):
         styles = {
-            TrackState.default: '#dac1a3 1p #ffffff',
-            TrackState.setSize: '#f5cb55 1p #ffffff',
-            TrackState.record: '#f78181 1p #ffffff',
-            TrackState.readyToRecord: '#f78181 1p #f78181',
-            TrackState.play: '#acd872 1p #ffffff',
-            TrackState.readyToPlay: '#acd872 1p #acd872',
-            TrackState.awaitingChanges: '#f5cb55 1p #f5cb55',
+            TrackState.default: '@light 1p @clear',
+            TrackState.setSize: '@set 1p @clear',
+            TrackState.record: '@record 1p @clear',
+            TrackState.readyToRecord: '@record 1p @record',
+            TrackState.play: '@play 1p @clear',
+            TrackState.readyToPlay: '@play 1p @play',
+            TrackState.awaitingChanges: '@set 1p @set',
         }
 
         style = styles[self.state]
@@ -111,13 +111,13 @@ class Track:
 
     def redrawTrack(self):
         styles = {
-            TrackState.default: '#ab9b87 1p #ffffff',
-            TrackState.setSize: '#f5cb55 1p #ffffff',
-            TrackState.record: '#f78181 1p #ffffff',
-            TrackState.readyToRecord: '#ffffff 5p #f78181',
-            TrackState.play: '#acd872 1p #ffffff',
-            TrackState.readyToPlay: '#ffffff 5p #acd872',
-            TrackState.awaitingChanges: '#ffffff 5p #f5cb55',
+            TrackState.default: '@neutral 1p @clear',
+            TrackState.setSize: '@set 1p @clear',
+            TrackState.record: '@record 1p @clear',
+            TrackState.readyToRecord: '@clear 5p @record',
+            TrackState.play: '@play 1p @clear',
+            TrackState.readyToPlay: '@clear 5p @play',
+            TrackState.awaitingChanges: '@clear 5p @set',
         }
 
         size = self.size if self.state != TrackState.setSize else self._inputSize
@@ -125,8 +125,8 @@ class Track:
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
         draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
 
-        if self.state == TrackState.play or self.state == TrackState.record:
-            draw.rectangle(self.left + 0.4, self.top + 1 + 0.25 + self.beat, 0.3, size - self.beat - 0.7, '#ffffff')
+        #if self.state == TrackState.play or self.state == TrackState.record:
+        #    draw.rectangle(self.left + 0.4, self.top + 1 + 0.25 + self.beat, 0.3, size - self.beat - 0.7, '#ffffff')
 
     def setBehaviour(self, beh):        
         self.behaviour = beh

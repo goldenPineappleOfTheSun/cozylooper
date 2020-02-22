@@ -97,16 +97,16 @@ class Metronome:
 
     def redrawIndicator(self):
         outerStyles = {
-            MetronomeState.idle: '#ab9b87',
-            MetronomeState.work: '#ab9b87',
-            MetronomeState.blink: '#ab9b87',
-            MetronomeState.set: '#f5cb55',
+            MetronomeState.idle: '@neutral',
+            MetronomeState.work: '@neutral',
+            MetronomeState.blink: '@neutral',
+            MetronomeState.set: '@set',
         }
         innerStyles = {
-            MetronomeState.idle: '#ab9b87',
-            MetronomeState.work: '#dac1a3',
-            MetronomeState.blink: '#ffffff',
-            MetronomeState.set: '#f5cb55',
+            MetronomeState.idle: '@neutral',
+            MetronomeState.work: '@light',
+            MetronomeState.blink: '@clear',
+            MetronomeState.set: '@set',
         }
 
         draw.clearRect(self.left, self.top, 1, 1)
@@ -115,10 +115,10 @@ class Metronome:
 
     def redrawText(self, needclear = True):
         styles = {
-            MetronomeState.idle: '#444444',
-            MetronomeState.work: '#444444',
-            MetronomeState.blink: '#444444',
-            MetronomeState.set: '#ff9800',
+            MetronomeState.idle: '@fore',
+            MetronomeState.work: '@fore',
+            MetronomeState.blink: '@fore',
+            MetronomeState.set: '@darkset',
         }
 
         bpm = self.bpm if self.state != MetronomeState.set else self._inputBpm
