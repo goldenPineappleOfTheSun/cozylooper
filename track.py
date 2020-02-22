@@ -197,6 +197,9 @@ class Track:
             self.redraw()
         self.behaviour.onBeat(self)
 
+    def onHalfBeat(self):
+        pass
+
     def onBar(self):
         self.behaviour.onBar(self)
 

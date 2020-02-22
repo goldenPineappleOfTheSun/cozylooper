@@ -29,7 +29,7 @@ class Metronome:
         self.bias = 0.15
         self.beatNumber = 0
         self.maxBeats = 16
-        self._lastBeatNumber = 0
+        self._flip = False
         self._pointer = 0
         self._soundTonearm = 0
         self._size = 1000
@@ -81,13 +81,10 @@ class Metronome:
         pygame.event.post(pygame.event.Event(events.BPM_TICK, {'beat': self.beatNumber}))  
         self._readyToSound = True 
 
+    def onHalfBeat(self):   
+        pygame.event.post(pygame.event.Event(events.BPM_HALF_TICK, {'beat': self.beatNumber}))  
+
     def playSound(self):
-        #if self._midiPlayer == None:
-        #    self._midiPlayer = pygame.midi.Output(0)
-        #self._midiPlayer.set_instrument(0)
-        #self._midiPlayer.note_on(64, 127)
-        #sd.play(self.sound * 0.2, self.soundSamplerate)
-        #print(np.shape(self.sound))
         self._soundTonearm = 0
 
     def redraw(self):
@@ -161,10 +158,15 @@ class Metronome:
         bias = self.bias
         beat = (self._pointer + bias) / beatContains
         self.beatNumber = int(beat)
-        if abs(self.beatNumber - self._lastBeatNumber) > 0:
-            self._lastBeatNumber = self.beatNumber
+
+        if self._flip == False and beat % 1 <= 0.5:
+            self._flip = True
             self.onBeat()
             self.redraw() 
+
+        if self._flip == True and beat % 1 > 0.5:
+            self._flip = False
+            self.onHalfBeat()
 
         if (bias == 0 and self._readyToSound) or (bias < 0 and (beat % 1) > (1 + self.bias) and self._readyToSound) or (bias > 0 and (beat % 1) > (self.bias) and self._readyToSound):
             metronomeEnabled = self.state == MetronomeState.work or self.state == MetronomeState.blink     

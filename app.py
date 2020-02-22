@@ -238,6 +238,10 @@ def main():
                         track.onBar()
                     if (beat % 16) == 0:
                         track.onGlobalLoop()
+            elif event.type == events.BPM_HALF_TICK:
+                beat = event.dict['beat']
+                for track in tracks:
+                    track.onHalfBeat()
 
 if __name__ == "__main__":
     main()
