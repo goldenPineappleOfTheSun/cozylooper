@@ -5,15 +5,14 @@ class LoopDefault:
 
     """ when track started """
     def onBeat(track):
-    	pass
+        if track.state == TrackState.readyToPlay:
+            track.state = TrackState.play
+            track.beat = 0
+            track.redraw()
 
     def onBar(track):
     	if track.state == TrackState.readyToRecord:
     		track.state = TrackState.record
-    		track.beat = 0
-    		track.redraw()
-    	if track.state == TrackState.readyToPlay:
-    		track.state = TrackState.play
     		track.beat = 0
     		track.redraw()
 

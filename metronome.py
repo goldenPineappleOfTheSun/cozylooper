@@ -53,7 +53,8 @@ class Metronome:
 
     def cancel(self):
         self._inputBpm = self.bpm
-        self.state = MetronomeState.idle
+        if self.state == MetronomeState.set:
+            self.state = MetronomeState.idle
         self.redraw()
 
     def changeBpm(self):

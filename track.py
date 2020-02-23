@@ -32,6 +32,10 @@ class Track:
             self.beat = 0
             self.state = TrackState.default
             self.redraw()
+        if self.state == TrackState.record or self.state == TrackState.readyToRecord:
+            self.state = TrackState.default
+            self.redraw()
+            
 
     def canWrite(self):
         return self.state == TrackState.record
