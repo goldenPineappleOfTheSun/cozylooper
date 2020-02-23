@@ -26,6 +26,7 @@ class Track:
         self._memorySize = 0
         self.behaviour = behaviour
         self.playAfterRecord = False
+        self.histogram = [0] * 16
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -64,6 +65,17 @@ class Track:
         draw.line(self.left + 0.45, self.top + 1 + 4, self.left + 0.55, self.top + 1 + 4, '@clear')
         draw.line(self.left + 0.45, self.top + 1 + 12, self.left + 0.55, self.top + 1 + 12, '@clear')
 
+    def drawHistogram(self, start, end, color):
+        for i in range(end - start):
+            if len(self.histogram) <= i + start:
+                print(start)
+                print(end)
+                print(i)
+                print('---')
+            vol = self.histogram[i + start]
+            if vol > 0:
+                draw.rectangle(self.left + 0.55 - abs(vol) / 4, self.top + 1 + i + start, abs(vol / 2), 1, color)
+
     def increaseSize(self):
         if self.state != TrackState.setSize:
             return
@@ -90,7 +102,6 @@ class Track:
         return result
 
     def redraw(self):
-        draw.clearRect(self.left, self.top, self.WIDTH, self.HEIGHT)
         self.redrawTrackHeader()
         self.redrawTrack()
         self.drawMeasures()
@@ -118,9 +129,9 @@ class Track:
         styles = {
             TrackState.default: '@neutral 1p @clear',
             TrackState.setSize: '@set 1p @clear',
-            TrackState.record: '@record 1p @clear',
+            TrackState.record: '@record',
             TrackState.readyToRecord: '@record 1p @record' if not self._isHalfBeat else '@lightrecord 1p @record',
-            TrackState.play: '@play 1p @clear',
+            TrackState.play: '@play',
             TrackState.readyToPlay: '@play 1p @play' if not self._isHalfBeat else '@lightplay 1p @play',
             TrackState.awaitingChanges: '@set 1p @clear' if not self._isHalfBeat else '@lightset 1p @clear',
         }
@@ -136,14 +147,20 @@ class Track:
 
         if not tracked:
             draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
-            draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])
+            draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])            
+
+            if self.state == TrackState.default:
+                self.drawHistogram(0, 15, '@set')
         else:
             if self.beat == 0:
                 draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
+                draw.rectangle(self.left, self.top + self.beat + 1, 1, size - self.beat, backstyles[self.state]) 
+                self.drawHistogram(0, 15, '@darkplay' if self.state == TrackState.play else '@darkrecord')
             else:
-                draw.clearRect(self.left, self.top + self.beat + 1 - 1, self.WIDTH, 2 if self.beat < 15 else 1)
-            draw.rectangle(self.left, self.top + 1, 1, self.beat, styles[self.state])
-            draw.rectangle(self.left, self.top + self.beat + 1, 1, size - self.beat, backstyles[self.state])
+                draw.clearRect(self.left, self.top + 1 + self.beat - 1, self.WIDTH, 1)
+                self.drawHistogram(self.beat, 15, '@darkplay' if self.state == TrackState.play else '@darkrecord')
+                draw.rectangle(self.left, self.top + 1 + self.beat - 1, self.WIDTH, 1, styles[self.state])  
+                self.drawHistogram(self.beat - 1, self.beat, '@darkplay' if self.state == TrackState.play else '@darkrecord')      
 
     def setBpm(self, value):
         self.bpm = value
@@ -201,7 +218,16 @@ class Track:
         for i in range(0, frames):
             if len(self.memory) > self._pos + i:
                 self.memory[self._pos + i] = indata[i]
-        self._pos = (self._pos + frames)# % self._memorySiz
+        self._pos = (self._pos + frames)
+        volmul = 5
+        maxvol = np.amax(np.abs(indata)) * volmul
+        if self.histogram[self.beat] < maxvol:
+            self.histogram[self.beat] += 0.01
+        else:
+            self.histogram[self.beat] -= 0.000
+
+        if self.histogram[self.beat] > 0.9:
+            self.histogram[self.beat] = 0.9
 
     ### Begaviour
 

@@ -18,8 +18,10 @@ colors = {
     '@darkset': '#ff9800',
     '@play': '#acd872',
     '@lightplay': '#c5ea93',
+    '@darkplay': '#80a550',
     '@record': '#f78181',
-    '@lightrecord': '#ff90aa'
+    '@lightrecord': '#ff90aa',
+    '@darkrecord': '#c34f4f'
 }
 
 _fonts = {

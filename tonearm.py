@@ -15,16 +15,16 @@ class Tonearm:
     def redraw(self):
         pos = (self.pos - 0) % 16
         y = self.top + 1 + math.floor(pos)
-        prevy = self.top + 1 + math.floor((pos - 1) % 16)
-        draw.clearRect(self.left, prevy, self.WIDTH, y)
-        draw.clearRect(self.left, y, self.WIDTH, y)
+        #prevy = self.top + 1 + math.floor((pos - 1) % 16)
+        #draw.clearRect(self.left, prevy, self.WIDTH, y)
+        draw.clearRect(self.left, y, self.WIDTH, 1)
         draw.rectangle(self.left + 0.25, y + 0.3, 0.6, 0.6, '@neutral')
 
     def redrawWhole(self):
-        pos = (self.pos - 0) % 16
-        y = self.top + 1 + math.floor(pos)
+        #pos = (self.pos - 0) % 16
+        #y = self.top + 1 + math.floor(pos)
         draw.clearRect(self.left, self.top + 1, self.WIDTH, 16)
-        draw.rectangle(self.left + 0.25, y + 0.3, 0.6, 0.6, '@neutral')
+        #draw.rectangle(self.left + 0.25, y + 0.3, 0.6, 0.6, '@neutral')
 
     def resetSize(self, 
                   bpm,
@@ -39,7 +39,10 @@ class Tonearm:
                bpm,
                samplerate = 44100,   
                channels = 2):
+        prev = self._pointer
         self._pointer = (self._pointer + step) % self._size
+        if prev > self._pointer:
+            self.redrawWhole()
 
     def update(self):        
         pixelContains = self._size / (draw.ch * 16)
