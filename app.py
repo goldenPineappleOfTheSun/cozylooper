@@ -70,9 +70,9 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(indata, elapsed, metronome.bpm, frames = frames)
+            track.write(indata, elapsed, frames = frames)
         if track.canRead():
-            read = track.read(elapsed, metronome.bpm, frames = frames)            
+            read = track.read(elapsed, frames = frames)            
             outdata += reshapeSound(read, outdata.shape)
     read = metronome.readSound(frames)
     outdata += reshapeSound(read, outdata.shape)
@@ -97,7 +97,8 @@ def playTrack(n, e):
 
 def bpmChanged(bpm):
     for track in tracks:
-        track.resetMemory(bpm)
+        track.setBpm(bpm)
+        track.resetMemory()
     tonearmA.resetSize(bpm)
     tonearmB.resetSize(bpm)
 

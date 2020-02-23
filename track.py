@@ -13,6 +13,7 @@ class Track:
         self.top = top
         self.size = 16
         self.beat = 0
+        self.bpm = 120
         self.state = TrackState.default
         self._inputSize = 16
         self._isHalfBeat = False
@@ -47,6 +48,7 @@ class Track:
         if self.state == TrackState.setSize:
             self.size = self._inputSize
             self.state = TrackState.awaitingChanges
+            self.resetMemory()
             self.redraw()
 
     def decreaseSize(self):
@@ -71,17 +73,15 @@ class Track:
         self.redraw()
 
     def resetMemory(self, 
-                    bpm,
                     samplerate = 44100,   
                     blocksize = sd.default.blocksize, 
                     channels = 2):
-        size = int(samplerate * (60 / bpm) * 16)
+        size = int(samplerate * (60 / self.bpm) * self.size)
         self._memorySize = size
         self.memory = np.empty([size + blocksize, channels], )
 
     def read(self, 
              timeinfo,
-             bpm,
              samplerate = 44100,   
              frames = sd.default.blocksize, 
              channels = 2):
@@ -145,6 +145,9 @@ class Track:
             draw.rectangle(self.left, self.top + 1, 1, self.beat, styles[self.state])
             draw.rectangle(self.left, self.top + self.beat + 1, 1, size - self.beat, backstyles[self.state])
 
+    def setBpm(self, value):
+        self.bpm = value
+
     def setBehaviour(self, beh):        
         self.behaviour = beh
 
@@ -192,7 +195,6 @@ class Track:
     def write(self,
               indata, 
               timeinfo,
-              bpm,
               samplerate = 44100,   
               frames = sd.default.blocksize, 
               channels = 2):
