@@ -13,7 +13,7 @@ class Tonearm:
         self._size = 1000
 
     def redraw(self):
-        pos = (self.pos - 1) % 16
+        pos = (self.pos - 0) % 16
         y = self.top + 1 + math.floor(pos)
         prevy = self.top + 1 + math.floor((pos - 1) % 16)
         draw.clearRect(self.left, prevy, self.WIDTH, y)
@@ -21,7 +21,7 @@ class Tonearm:
         draw.rectangle(self.left + 0.25, y + 0.3, 0.6, 0.6, '@neutral')
 
     def redrawWhole(self):
-        pos = (self.pos - 1) % 16
+        pos = (self.pos - 0) % 16
         y = self.top + 1 + math.floor(pos)
         draw.clearRect(self.left, self.top + 1, self.WIDTH, 16)
         draw.rectangle(self.left + 0.25, y + 0.3, 0.6, 0.6, '@neutral')

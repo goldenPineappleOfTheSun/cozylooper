@@ -35,7 +35,7 @@ class Track:
         if self.state == TrackState.record or self.state == TrackState.readyToRecord:
             self.state = TrackState.default
             self.redraw()
-            
+
 
     def canWrite(self):
         return self.state == TrackState.record
@@ -197,10 +197,9 @@ class Track:
               frames = sd.default.blocksize, 
               channels = 2):
         for i in range(0, frames):
-            # спорное решение..
             if len(self.memory) > self._pos + i:
                 self.memory[self._pos + i] = indata[i]
-        self._pos = (self._pos + frames) % self._memorySize
+        self._pos = (self._pos + frames)# % self._memorySiz
 
     ### Begaviour
 
