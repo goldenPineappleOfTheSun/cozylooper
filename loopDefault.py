@@ -35,6 +35,7 @@ class LoopDefault:
 
     def onRecordDemanded(track):
         track.state = TrackState.readyToRecord
+        track.resetMemory()
         track.redraw()
 
     def onRecordDisabled(track):

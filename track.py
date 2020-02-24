@@ -91,6 +91,8 @@ class Track:
         size = int(samplerate * (60 / self.bpm) * self.size)
         self._memorySize = size
         self.memory = np.empty([size + blocksize, channels], )
+        self.histogram = [0] * 16
+        self.redraw()
 
     def read(self, 
              timeinfo,
