@@ -45,6 +45,8 @@ class Metronome:
             self.redrawText(None)
 
     def confirm(self):
+        if self.bpm == self._inputBpm:
+            return
         self.setBpm(self._inputBpm)
         if self.state == MetronomeState.set:
             self.state = MetronomeState.idle
