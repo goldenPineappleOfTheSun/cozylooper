@@ -25,7 +25,9 @@ class Metronome:
         self.HEIGHT = 1
         self.sound, self.soundSamplerate = sf.read('metronome_tick.wav', dtype='float32')
         self._soundSize = np.shape(self.sound)[0]
+        self.highPitchSound = np.concatenate((self.sound[0::2], [[0, 0] for _ in range(math.floor(len(self.sound) / 2))]))
         self.state = MetronomeState.idle
+        self.highPitched = False
         self.bias = 0.15
         self.beatNumber = 0
         self.maxBeats = 16
@@ -81,6 +83,7 @@ class Metronome:
         self._pointer = (self._pointer + step) % self._size
 
     def onBeat(self):   
+        self.highPitched = False if self.beatNumber % 4 != 0 else True
         pygame.event.post(pygame.event.Event(events.BPM_TICK, {'beat': self.beatNumber}))  
         self._readyToSound = True 
 
@@ -145,7 +148,8 @@ class Metronome:
     def readSound(self, frames):
         if self._soundTonearm > self._soundSize:
             return np.array([])
-        result = np.array(self.sound[self._soundTonearm:self._soundTonearm+frames])
+        sound = self.sound if not self.highPitched else self.highPitchSound 
+        result = np.array(sound[self._soundTonearm:self._soundTonearm+frames])
         self._soundTonearm = self._soundTonearm + frames
         return result
 
