@@ -53,6 +53,7 @@ class Metronome:
         if self.state == MetronomeState.set:
             self.state = MetronomeState.idle
         self.redraw()
+        self.enable()
         pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
 
     def cancel(self):
