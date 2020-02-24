@@ -13,7 +13,10 @@ class Tonearm:
         self._size = 1000
 
     def redraw(self):
-        pos = (self.pos - 0) % 16
+        pos = (self.pos - 1) % 16
+        if math.floor(pos) == 15:
+            return
+
         y = self.top + 1 + math.floor(pos)
         #prevy = self.top + 1 + math.floor((pos - 1) % 16)
         #draw.clearRect(self.left, prevy, self.WIDTH, y)
