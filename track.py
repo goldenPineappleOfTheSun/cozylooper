@@ -67,14 +67,9 @@ class Track:
 
     def drawHistogram(self, start, end, color):
         for i in range(end - start):
-            if len(self.histogram) <= i + start:
-                print(start)
-                print(end)
-                print(i)
-                print('---')
             vol = self.histogram[i + start]
             if vol > 0:
-                draw.rectangle(self.left + 0.55 - abs(vol) / 4, self.top + 1 + i + start, abs(vol / 2), 1, color)
+                draw.rectangle(self.left + 0.55 - abs(vol) / 4 + ((i + start) % 2 - 0.5) * 0.02, self.top + 1 + i + start, abs(vol / 2), 1, color)
 
     def increaseSize(self):
         if self.state != TrackState.setSize:
@@ -152,7 +147,7 @@ class Track:
             draw.rectangle(self.left, self.top + 1, 1, size, styles[self.state])            
 
             if self.state == TrackState.default:
-                self.drawHistogram(0, 15, '@set')
+                self.drawHistogram(0, 16, '@set')
         else:
             if self.beat == 0:
                 draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1)
