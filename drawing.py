@@ -174,25 +174,25 @@ def clearRect(x, y, w, h):
 
 def appendUpdateRect(x, y, w, h):
     rect = pygame.Rect(x * cw, y * ch, w * cw, h * ch)
-    for x in updates:
-        newFullyContains = x.left >= rect.left and x.right <= rect.right and x.top >= rect.top and x.bottom <= rect.bottom 
-        oldFullyContains = x.left <= rect.left and x.right >= rect.right and x.top <= rect.top and x.bottom >= rect.bottom
+    for r in updates:
+        newFullyContains = r.left >= rect.left and r.right <= rect.right and r.top >= rect.top and r.bottom <= rect.bottom 
+        oldFullyContains = r.left <= rect.left and r.right >= rect.right and r.top <= rect.top and r.bottom >= rect.bottom
         
         if oldFullyContains:
             return
 
         if newFullyContains:
-            x = x.union(rect)
+            r = r.union(rect)
             return
 
-        isLeftAndRightMatches = x.left == rect.left and x.right == rect.right
-        isUnionableByHor = isLeftAndRightMatches and ((x.top > rect.top and x.top < rect.bottom) or (x.bottom < rect.bottom and x.bottom > rect.top))
+        isLeftAndRightMatches = r.left == rect.left and r.right == rect.right
+        isUnionableByHor = isLeftAndRightMatches and (r.top < rect.bottom and r.bottom > rect.top)
 
-        isTopAndBottomMatches = x.top == rect.top and x.bottom == rect.bottom
-        isUnionableByVer = isTopAndBottomMatches and ((x.left >= rect.left and x.left <= rect.right) or (x.right <= rect.right and x.right >= rect.left))
+        isTopAndBottomMatches = r.top == rect.top and r.bottom == rect.bottom
+        isUnionableByVer = isTopAndBottomMatches and (r.left < rect.right and r.right > rect.left)
 
         if isUnionableByHor or isUnionableByVer:
-            x = x.union(rect)
+            r = r.union(rect)
             return
 
     updates.append(rect)
