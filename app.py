@@ -3,8 +3,11 @@ import pygame
 import pygame.midi
 import numpy as np
 import time
+from area import Area
+import looperAreas
 import drawing as draw
 import keyboard
+import hotkeys
 import sounddevice as sd
 import customevents as events
 from wire import Wire
@@ -18,23 +21,29 @@ streamTimeStart = 0
 keyboardMap = []
 _suspitiousFunctionKeysLag = 10
 
+def selectArea(areaname):
+    if not areaname in areas:
+        return
+    currentArea = areaname
+
+marginTop = 1
 wire = Wire(inputDevice = 8, outputDevice = 8)
-metronome = Metronome(120, left = 16, top = 1)
+metronome = Metronome(120, left = 16, top = marginTop)
 tracks = [
-    Track(0, LoopDefault, 1, 1),
-    Track(1, LoopDefault, 2, 1),
-    Track(2, LoopDefault, 3, 1),
-    Track(3, LoopDefault, 4, 1),
-    Track(4, LoopDefault, 6, 1),
-    Track(5, LoopDefault, 7, 1),
-    Track(6, LoopDefault, 8, 1),
-    Track(7, LoopDefault, 9, 1),
-    Track(8, LoopDefault, 11, 1),
-    Track(9, LoopDefault, 12, 1),
-    Track(10, LoopDefault, 13, 1),
-    Track(11, LoopDefault, 14, 1),]
-tonearmA = Tonearm(size = 16, left = 5, top = 1)
-tonearmB = Tonearm(size = 16, left = 10, top = 1)
+    Track(0, LoopDefault, 1, marginTop),
+    Track(1, LoopDefault, 2, marginTop),
+    Track(2, LoopDefault, 3, marginTop),
+    Track(3, LoopDefault, 4, marginTop),
+    Track(4, LoopDefault, 6, marginTop),
+    Track(5, LoopDefault, 7, marginTop),
+    Track(6, LoopDefault, 8, marginTop),
+    Track(7, LoopDefault, 9, marginTop),
+    Track(8, LoopDefault, 11, marginTop),
+    Track(9, LoopDefault, 12, marginTop),
+    Track(10, LoopDefault, 13, marginTop),
+    Track(11, LoopDefault, 14, marginTop),]
+tonearmA = Tonearm(size = 16, left = 5, top = marginTop)
+tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
 
 def start():   
@@ -106,6 +115,9 @@ def bpmChanged(bpm):
     tonearmA.resetSize(bpm, samplerate = 44100)
     tonearmB.resetSize(bpm, samplerate = 44100)
 
+def consolePressed(event):
+    print('~')
+
 def bPressed(event):
     metronome.toggle()
 
@@ -149,70 +161,71 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
-keyboard.on_press_key('b', bPressed)
-keyboard.add_hotkey('s + b', setBpmPressed)
+hotkeys.simple('b', bPressed, "main")
+hotkeys.simple('/', consolePressed, "main")
+hotkeys.add('s + b', setBpmPressed, "main")
 
-keyboard.on_press_key('1', digitPressed)
-keyboard.on_press_key('2', digitPressed)
-keyboard.on_press_key('3', digitPressed)
-keyboard.on_press_key('4', digitPressed)
-keyboard.on_press_key('5', digitPressed)
-keyboard.on_press_key('6', digitPressed)
-keyboard.on_press_key('7', digitPressed)
-keyboard.on_press_key('8', digitPressed)
-keyboard.on_press_key('9', digitPressed)
-keyboard.on_press_key('0', digitPressed)
-keyboard.on_press_key('up', arrowUpPressed)
-keyboard.on_press_key('down', arrowDownPressed)
+hotkeys.simple('1', digitPressed, "main")
+hotkeys.simple('2', digitPressed, "main")
+hotkeys.simple('3', digitPressed, "main")
+hotkeys.simple('4', digitPressed, "main")
+hotkeys.simple('5', digitPressed, "main")
+hotkeys.simple('6', digitPressed, "main")
+hotkeys.simple('7', digitPressed, "main")
+hotkeys.simple('8', digitPressed, "main")
+hotkeys.simple('9', digitPressed, "main")
+hotkeys.simple('0', digitPressed, "main")
+hotkeys.simple('up', arrowUpPressed, "main")
+hotkeys.simple('down', arrowDownPressed, "main")
 
-keyboard.add_hotkey('s + f1', tracks[0].toggleChangeSize)
-keyboard.add_hotkey('s + f2', tracks[1].toggleChangeSize)
-keyboard.add_hotkey('s + f3', tracks[2].toggleChangeSize)
-keyboard.add_hotkey('s + f4', tracks[3].toggleChangeSize)
-keyboard.add_hotkey('s + f5', tracks[4].toggleChangeSize)
-keyboard.add_hotkey('s + f6', tracks[5].toggleChangeSize)
-keyboard.add_hotkey('s + f7', tracks[6].toggleChangeSize)
-keyboard.add_hotkey('s + f8', tracks[7].toggleChangeSize)
-keyboard.add_hotkey('s + f9', tracks[8].toggleChangeSize)
-keyboard.add_hotkey('s + f10', tracks[9].toggleChangeSize)
-keyboard.add_hotkey('s + f11', tracks[10].toggleChangeSize)
-keyboard.add_hotkey('s + f12', tracks[11].toggleChangeSize)
+hotkeys.add('s + f1', tracks[0].toggleChangeSize, "main")
+hotkeys.add('s + f2', tracks[1].toggleChangeSize, "main")
+hotkeys.add('s + f3', tracks[2].toggleChangeSize, "main")
+hotkeys.add('s + f4', tracks[3].toggleChangeSize, "main")
+hotkeys.add('s + f5', tracks[4].toggleChangeSize, "main")
+hotkeys.add('s + f6', tracks[5].toggleChangeSize, "main")
+hotkeys.add('s + f7', tracks[6].toggleChangeSize, "main")
+hotkeys.add('s + f8', tracks[7].toggleChangeSize, "main")
+hotkeys.add('s + f9', tracks[8].toggleChangeSize, "main")
+hotkeys.add('s + f10', tracks[9].toggleChangeSize, "main")
+hotkeys.add('s + f11', tracks[10].toggleChangeSize, "main")
+hotkeys.add('s + f12', tracks[11].toggleChangeSize, "main")
 
-keyboard.add_hotkey('space + f1', tracks[0].toggleRecord)
-keyboard.add_hotkey('space + f2', tracks[1].toggleRecord)
-keyboard.add_hotkey('space + f3', tracks[2].toggleRecord)
-keyboard.add_hotkey('space + f4', tracks[3].toggleRecord)
-keyboard.add_hotkey('space + f5', tracks[4].toggleRecord)
-keyboard.add_hotkey('space + f6', tracks[5].toggleRecord)
-keyboard.add_hotkey('space + f7', tracks[6].toggleRecord)
-keyboard.add_hotkey('space + f8', tracks[7].toggleRecord)
-keyboard.add_hotkey('space + f9', tracks[8].toggleRecord)
-keyboard.add_hotkey('space + f10', tracks[9].toggleRecord)
-keyboard.add_hotkey('space + f11', tracks[10].toggleRecord)
-keyboard.add_hotkey('space + f12', tracks[11].toggleRecord)
+hotkeys.add('space + f1', tracks[0].toggleRecord, "main")
+hotkeys.add('space + f2', tracks[1].toggleRecord, "main")
+hotkeys.add('space + f3', tracks[2].toggleRecord, "main")
+hotkeys.add('space + f4', tracks[3].toggleRecord, "main")
+hotkeys.add('space + f5', tracks[4].toggleRecord, "main")
+hotkeys.add('space + f6', tracks[5].toggleRecord, "main")
+hotkeys.add('space + f7', tracks[6].toggleRecord, "main")
+hotkeys.add('space + f8', tracks[7].toggleRecord, "main")
+hotkeys.add('space + f9', tracks[8].toggleRecord, "main")
+hotkeys.add('space + f10', tracks[9].toggleRecord, "main")
+hotkeys.add('space + f11', tracks[10].toggleRecord, "main")
+hotkeys.add('space + f12', tracks[11].toggleRecord, "main")
 
-keyboard.on_press_key('f1', lambda e: playTrack(0, e))
-keyboard.on_press_key('f2', lambda e: playTrack(1, e))
-keyboard.on_press_key('f3', lambda e: playTrack(2, e))
-keyboard.on_press_key('f4', lambda e: playTrack(3, e))
-keyboard.on_press_key('f5', lambda e: playTrack(4, e))
-keyboard.on_press_key('f6', lambda e: playTrack(5, e))
-keyboard.on_press_key('f7', lambda e: playTrack(6, e))
-keyboard.on_press_key('f8', lambda e: playTrack(7, e))
-keyboard.on_press_key('f9', lambda e: playTrack(8, e))
-keyboard.on_press_key('f10', lambda e: playTrack(9, e))
-keyboard.on_press_key('f11', lambda e: playTrack(10, e))
-keyboard.on_press_key('f12', lambda e: playTrack(11, e))
+hotkeys.simple('f1', lambda e: playTrack(0, e), "main")
+hotkeys.simple('f2', lambda e: playTrack(1, e), "main")
+hotkeys.simple('f3', lambda e: playTrack(2, e), "main")
+hotkeys.simple('f4', lambda e: playTrack(3, e), "main")
+hotkeys.simple('f5', lambda e: playTrack(4, e), "main")
+hotkeys.simple('f6', lambda e: playTrack(5, e), "main")
+hotkeys.simple('f7', lambda e: playTrack(6, e), "main")
+hotkeys.simple('f8', lambda e: playTrack(7, e), "main")
+hotkeys.simple('f9', lambda e: playTrack(8, e), "main")
+hotkeys.simple('f10', lambda e: playTrack(9, e), "main")
+hotkeys.simple('f11', lambda e: playTrack(10, e), "main")
+hotkeys.simple('f12', lambda e: playTrack(11, e), "main")
 
-keyboard.on_press_key('backspace', backspacePressed)
-keyboard.on_press_key('enter', enterPressed)
-keyboard.on_press_key('space', spacePressed)
-keyboard.on_press_key('esc', escPressed)
+hotkeys.simple('backspace', backspacePressed, "main")
+hotkeys.simple('enter', enterPressed, "main")
+hotkeys.simple('space', spacePressed, "main")
+hotkeys.simple('esc', escPressed, "main")
 
 def main():
     pygame.init()
     #pygame.midi.init()
-    draw.init(30, 20)
+    draw.init(34, 28)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)
     pygame.display.set_caption("Looper")
