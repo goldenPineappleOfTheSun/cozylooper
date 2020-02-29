@@ -70,10 +70,14 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(indata, elapsed, frames = frames)
+            track.write(indata, elapsed, frames = frames, samplerate = 44100)
         if track.canRead():
-            read = track.read(elapsed, frames = frames)            
+            read = track.read(elapsed, frames = frames, samplerate = 44100)            
             outdata += reshapeSound(read, outdata.shape)
+        """ 
+        TODO: smooth
+        track.fade(indata, elapsed, frames = frames)
+        """
     read = metronome.readSound(frames)
     outdata += reshapeSound(read, outdata.shape)
 
@@ -98,9 +102,9 @@ def playTrack(n, e):
 def bpmChanged(bpm):
     for track in tracks:
         track.setBpm(bpm)
-        track.resetMemory()
-    tonearmA.resetSize(bpm)
-    tonearmB.resetSize(bpm)
+        track.resetMemory(samplerate = 44100)
+    tonearmA.resetSize(bpm, samplerate = 44100)
+    tonearmB.resetSize(bpm, samplerate = 44100)
 
 def bPressed(event):
     metronome.toggle()

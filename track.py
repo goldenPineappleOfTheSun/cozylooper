@@ -21,12 +21,35 @@ class Track:
         self.HEIGHT = 17
         self._initDraw = True
         self.bufferSize = sd.default.blocksize
-        self.memory = np.empty([2000, 64, 2], )
+        self.memory = np.empty([2000, 2], )
+
+        """ 
+        TODO: smooth
+        # smoother transitions
+        # fade in has pointer so no need to use queries
+        # fade out pointer counts time before stop
+        self.fadeInMemory = np.empty([100, 2])
+        self._fadeInPointer = 0
+        self.fadeOutMemory = np.empty([100, 2])
+        self._fadeOutPointer = 0
+        self.fadesEnabled = True
+        """
+        
         self._pos = 0
         self._memorySize = 0
         self.behaviour = behaviour
         self.playAfterRecord = False
         self.histogram = [0] * 16
+
+    """ 
+    TODO: smooth
+    def appendFades(self):
+        fadeLength = len(self.fadeOutMemory)
+        for i in range(0, np.shape(self.fadeOutMemory)[0]):
+            self.memory[i] = self.memory[i] + self.fadeOutMemory[i] * ((fadeLength - i) / fadeLength)
+        for i in range(0, np.shape(self.fadeInMemory)[0]):
+            self.memory[len(self.memory) - (fadeLength - i)] = self.memory[i] + self.fadeInMemory[i] * (1 - ((fadeLength - i) / fadeLength))
+    """
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -49,7 +72,7 @@ class Track:
         if self.state == TrackState.setSize:
             self.size = self._inputSize
             self.state = TrackState.awaitingChanges
-            self.resetMemory()
+            self.resetMemory(samplerate = 44100)
             self.redraw()
 
     def decreaseSize(self):
@@ -87,6 +110,11 @@ class Track:
         self._memorySize = size
         self.memory = np.empty([size + blocksize, channels], )
         self.histogram = [0] * 16
+        samplesPerFade = int(samplerate * 0.1)
+        self.fadeInMemory = np.zeros([samplesPerFade, channels], )
+        self._fadeInPointer = 0
+        self.fadeOutMemory = np.zeros([samplesPerFade, channels], )
+        self._fadeOutPointer = -1
         self.redraw()
 
     def read(self, 
@@ -205,6 +233,31 @@ class Track:
         if needredraw:
             self.redraw()
             self._initDraw = False
+
+    """ 
+    TODO: smooth
+    def fade(self,
+             indata, 
+             timeinfo,
+             samplerate = 44100,   
+             frames = sd.default.blocksize, 
+             channels = 2):
+        if not self.fadesEnabled:
+            return
+        
+        for i in range(0, frames):
+            #self.fadeInMemory[:][self._fadeInPointer] = 0
+            a = self.fadeInMemory[:][self._fadeInPointer]
+            self._fadeInPointer = (self._fadeInPointer + 1) % len(self.fadeInMemory)
+
+            if self._fadeOutPointer > 0:
+                self.fadeOutMemory[len(self.fadeOutMemory) - self._fadeOutPointer] = indata[i]
+            elif self._fadeOutPointer == 0:
+                self.appendFades()
+                self._fadeOutPointer = -1
+        """
+
+
 
     def write(self,
               indata, 
