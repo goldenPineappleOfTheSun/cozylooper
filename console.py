@@ -14,6 +14,8 @@ class Console:
         self.commands = {
             'set-bpm': self.c_changeBpm
         }
+        self.history = []
+        self._historyPointer = 0
 
     def activate(self):
         self.active = True
@@ -39,6 +41,12 @@ class Console:
             self.text = self.text[:-1]
             self.redraw()
             return
+        if key == 'prev':
+            self.prevCommand()
+            return
+        if key == 'next':
+            self.nextCommand()
+            return
         self.text += key
         self.redraw()
 
@@ -48,7 +56,23 @@ class Console:
             raise Exception('no such command: ' + parts[0])
 
         self.out = self.commands[parts[0]](parts[1:])
+        self.history.append(self.text)
+        self._historyPointer = -1
         self.text = ''
+        self.redraw()
+
+    def prevCommand(self):
+        if self._historyPointer > 0:
+            self._historyPointer -= 1
+        if self._historyPointer == -1:
+            self._historyPointer = len(self.history) - 1
+        self.text = self.history[self._historyPointer]
+        self.redraw()
+
+    def nextCommand(self):
+        if self._historyPointer < len(self.history) - 1:
+            self._historyPointer += 1
+        self.text = self.history[self._historyPointer]
         self.redraw()
 
     # commands

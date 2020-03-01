@@ -177,6 +177,12 @@ def escPressed(event):
 def consoleKeyboardInput(key):
     console.input(key)
 
+def prevCommand(event):
+    console.input('prev')
+
+def nextCommand(event):
+    console.input('next')
+
 hotkeys.simple('b', bPressed, "main")
 hotkeys.simple('tab', mainTabbed, "main")
 hotkeys.simple('tab', consoleTabbed, "console")
@@ -241,6 +247,8 @@ hotkeys.simple('esc', escPressed, "main")
 
 hotkeys.processText(consoleKeyboardInput, "console")
 hotkeys.simple('enter', processConsoleCommand, "console")
+hotkeys.simple('up', prevCommand, "console")
+hotkeys.simple('down', nextCommand, "console")
 
 def main():
     pygame.init()

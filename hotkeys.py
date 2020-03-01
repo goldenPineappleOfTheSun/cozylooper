@@ -10,10 +10,11 @@ def simple(name, callback, area):
 def add(str, callback, area):
 	keyboard.add_hotkey(str, checkAreaAndCallHotkey(callback, area))
 
+""" very undone but works by now """
 def processText(callback, area):
     for c in ascii_lowercase:
-        keyboard.on_press_key(c, checkAreaAndCallKeyboardKey_p(callback, area, c))
         keyboard.add_hotkey('shift + ' + c, checkAreaAndCallKeyboardKey_h(callback, area, c.upper()))
+        keyboard.on_press_key(c, checkAreaAndCallKeyboardKey_p(callback, area, c))
 
     for c in [str(x) for x in range(0, 10)]:
         keyboard.on_press_key(c, checkAreaAndCallKeyboardKey_p(callback, area, c))
@@ -40,6 +41,16 @@ def checkAreaAndCallHotkey(callback, area):
 
 def checkAreaAndCallKeyboardKey_p(callback, area, key):
     def cb(event):
+        if keyboard.is_pressed('shift'):
+            return
+        # some strange arrows bug !!!
+        if (event.name == 'up'
+        or event.name == 'down'
+        or event.name == 'left'
+        or event.name == 'right'
+        or event.name == 'page up'
+        or event.name == 'page down'):
+            return
         if area == looperAreas.currentArea:
             callback(key)
     return cb
