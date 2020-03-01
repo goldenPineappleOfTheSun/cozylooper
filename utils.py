@@ -17,3 +17,13 @@ def callOverload(value, string, integer, real, number = None):
 
 def interpolate(text):
     return text.format(**sys._getframe(1).f_locals)
+
+def countPositionalArguments(func):
+    all_args = func.__code__.co_argcount
+
+    if func.__defaults__ is not None:  #  in case there are no kwargs
+        kwargs = len(func.__defaults__)
+    else:
+        kwargs = 0
+
+    return all_args - kwargs

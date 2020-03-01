@@ -29,7 +29,8 @@ colors = {
 
 _fonts = {
     'open-sans': 'fonts/OpenSans-Regular.ttf',
-    'open-sans-bold': 'fonts/OpenSans-Bold.ttf'
+    'open-sans-bold': 'fonts/OpenSans-Bold.ttf',
+    'lucida-console': 'fonts/LucidaConsole.ttf'
 }
 
 fontsCollection = {}
@@ -48,6 +49,7 @@ def init(w, h, cellWidth = 16, cellHeight = 16, initialCanvas = None):
     ch = cellHeight
     canvas = initialCanvas
     fontsCollection['default'] = pygame.font.Font(None, 16)
+    setNewFont('console', 'lucida-console 12')
 
 def setCanvas(value):
     global canvas
@@ -162,7 +164,10 @@ def text(txt, left, top, style):
     aligns = {
         'midleft': lambda t, _x, _y: todraw.get_rect(midleft=(_x, _y)),
         'center': lambda t, _x, _y: todraw.get_rect(center=(_x, _y)),
-        'midright': lambda t, _x, _y: todraw.get_rect(midright=(_x, _y))
+        'midright': lambda t, _x, _y: todraw.get_rect(midright=(_x, _y)),
+        'midbottom': lambda t, _x, _y: todraw.get_rect(midbottom=(_x, _y)),
+        'topleft': lambda t, _x, _y: todraw.get_rect(topleft=(_x, _y)),
+        'bottomleft': lambda t, _x, _y: todraw.get_rect(bottomleft=(_x, _y)),
     }
 
     drawStyle = _styleText(style)

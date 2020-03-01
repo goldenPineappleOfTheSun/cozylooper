@@ -50,6 +50,7 @@ console = Console(1, 26, 32)
 
 def start():   
     global metronome
+
     bpmChanged(metronome.bpm)
     wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
@@ -170,6 +171,9 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
+def consoleKeyboardInput(key):
+    console.input(key)
+
 hotkeys.simple('b', bPressed, "main")
 hotkeys.simple('tab', mainTabbed, "main")
 hotkeys.simple('tab', consoleTabbed, "console")
@@ -232,10 +236,12 @@ hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
 
+hotkeys.processText(consoleKeyboardInput, "console")
+
 def main():
     pygame.init()
     #pygame.midi.init()
-    draw.init(34, 28)
+    draw.init(34, 29)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)
     pygame.display.set_caption("Looper")
