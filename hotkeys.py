@@ -24,6 +24,7 @@ def processText(callback, area):
     keyboard.on_press_key('=', checkAreaAndCallKeyboardKey_p(callback, area, '='))
     keyboard.on_press_key('.', checkAreaAndCallKeyboardKey_p(callback, area, '.'))
     keyboard.on_press_key(',', checkAreaAndCallKeyboardKey_p(callback, area, ','))
+    keyboard.on_press_key('space', checkAreaAndCallKeyboardKey_p(callback, area, ' '))
 
 def checkAreaAndCallSimple(callback, area):
 	def cb(event):

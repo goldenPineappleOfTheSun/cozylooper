@@ -128,6 +128,9 @@ def bpmChanged(bpm):
     tonearmA.resetSize(bpm, samplerate = 44100)
     tonearmB.resetSize(bpm, samplerate = 44100)
 
+def processConsoleCommand(event):
+    console.processCommand()
+
 def bPressed(event):
     metronome.toggle()
 
@@ -237,6 +240,7 @@ hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
 
 hotkeys.processText(consoleKeyboardInput, "console")
+hotkeys.simple('enter', processConsoleCommand, "console")
 
 def main():
     pygame.init()
