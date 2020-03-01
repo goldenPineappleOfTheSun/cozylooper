@@ -14,6 +14,7 @@ colors = {
     '@neutral': '#ab9b87',
     '@fore': '#444444',
     '@light': '#dac1a3',
+    '@dark': '#666666',
     '@set': '#f5cb55',
     '@lightset': '#fbd979',
     '@darkset': '#ff9800',

@@ -9,7 +9,7 @@ areas = {
 currentArea = "main"
 lastChangeTime = time.time()
 
-def changeArea(new):
+def changeArea(new, func):
     global lastChangeTime
     global areas
     global currentArea
@@ -18,6 +18,8 @@ def changeArea(new):
     if now - lastChangeTime < 0.1:
         return
     lastChangeTime = now
+
+    func()
 
     if new in areas:
         areas[currentArea].clearHighlight()

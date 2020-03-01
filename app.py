@@ -103,10 +103,14 @@ def reshapeSound(sound, shape):
     return sound
 
 def mainTabbed(event):
-    looperAreas.changeArea('console')
+    looperAreas.changeArea(
+        'console',
+        lambda: console.activate())
 
 def consoleTabbed(event):
-    looperAreas.changeArea('main')
+    looperAreas.changeArea(
+        'main',
+        lambda: console.deactivate())
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
@@ -122,9 +126,6 @@ def bpmChanged(bpm):
         track.resetMemory(samplerate = 44100)
     tonearmA.resetSize(bpm, samplerate = 44100)
     tonearmB.resetSize(bpm, samplerate = 44100)
-
-def consolePressed(event):
-    print('~')
 
 def bPressed(event):
     metronome.toggle()
