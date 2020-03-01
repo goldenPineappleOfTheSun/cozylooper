@@ -15,6 +15,7 @@ from metronome import Metronome
 from track import Track
 from tonearm import Tonearm
 from loopDefault import LoopDefault
+from console import Console
 
 """ Main Loop """
 streamTimeStart = 0
@@ -45,6 +46,7 @@ tracks = [
 tonearmA = Tonearm(size = 16, left = 5, top = marginTop)
 tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
+console = Console(1, 26, 32)
 
 def start():   
     global metronome
@@ -52,6 +54,7 @@ def start():
     wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
+    console.redraw()
 
 def update():
     ticks = pygame.time.get_ticks()
