@@ -127,7 +127,7 @@ class Metronome:
 
         bpm = self.bpm if self.state != MetronomeState.set else self._inputBpm
 
-        x = str(self.left + 1) + 'cw + 6'
+        x = str(self.left + 1) + 'cw + 6p'
         y = self.top + 0.5
         draw.clearRect(self.left + 1, self.top, self.WIDTH - 1, 1)
         draw.text(str(bpm) + 'bpm', x, y, styles[self.state])

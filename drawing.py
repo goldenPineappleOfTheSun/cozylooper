@@ -320,7 +320,10 @@ def _coordsFromString(value):
                 raise Exception('wrong operator format!')
             sign = 1 if x == '+' else -1 if x == '-' else 0
         elif i == 2:
-            result += sign * int(parts[i])
+            x = parts[i]
+            if not _isPoints(x):
+                raise Exception('wrong cells format ("' + value + '")!')
+            result += sign * int(x[:-1])
         else:
             raise Exception('wrong format')
     return result
