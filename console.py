@@ -1,5 +1,7 @@
+import pygame
 from utils import interpolate
 import drawing as draw
+import customevents as events
 
 class Console:
     def __init__(self, x, y, w):
@@ -30,7 +32,7 @@ class Console:
             draw.text(' > ' + self.text, self.left, interpolate('{self.top}ch + 1p'), '@clear console topleft')
         if self.out != '':
             outstyle = '@clear console topleft' if self.active else '@dark console topleft'
-            draw.text(' output > ' + self.out, self.left, self.top + 1, outstyle)
+            draw.text(' output: ' + self.out, self.left, self.top + 1, outstyle)
 
     def input(self, key):
         if key == 'backspace':
@@ -52,7 +54,13 @@ class Console:
     # commands
 
     def c_changeBpm(self, arguments):
-        print(arguments)
-        return ''
+        bpm = int(arguments[0])
+
+        if not type(bpm) == int:
+            return 'ERROR: wrong bpm value'
+            raise Exception('wrong bpm value')
+
+        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_BPM, {'value': bpm}))  
+        return 'bpm changed'
 
 

@@ -54,7 +54,6 @@ class Metronome:
             self.state = MetronomeState.idle
         self.redraw()
         self.enable()
-        pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
 
     def cancel(self):
         self._inputBpm = self.bpm
@@ -62,7 +61,7 @@ class Metronome:
             self.state = MetronomeState.idle
         self.redraw()
 
-    def changeBpm(self):
+    def configureBpm(self):
         self._inputBpm = 0
         self.state = MetronomeState.set
 
@@ -145,6 +144,7 @@ class Metronome:
         self.bpm = bpm
         self.redraw()
         self.resetSize(self.bpm)
+        pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
 
     def readSound(self, frames):
         if self._soundTonearm > self._soundSize:

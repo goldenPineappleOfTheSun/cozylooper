@@ -135,7 +135,7 @@ def bPressed(event):
     metronome.toggle()
 
 def setBpmPressed():
-    metronome.changeBpm()
+    metronome.configureBpm()
 
 def digitPressed(event):
     # some strange arrows bug !!!
@@ -280,6 +280,8 @@ def main():
                 beat = event.dict['beat']
                 for track in tracks:
                     track.onHalfBeat()
+            elif event.type == events.DEMAND_CHANGE_BPM:
+                metronome.setBpm(event.dict['value'])
 
 if __name__ == "__main__":
     main()
