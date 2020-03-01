@@ -102,6 +102,11 @@ def reshapeSound(sound, shape):
         sound = np.resize(sound, [shape[0], shape[1]])
     return sound
 
+def mainTabbed(event):
+    looperAreas.changeArea('console')
+
+def consoleTabbed(event):
+    looperAreas.changeArea('main')
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
@@ -165,7 +170,8 @@ def escPressed(event):
         track.cancel()
 
 hotkeys.simple('b', bPressed, "main")
-hotkeys.simple('/', consolePressed, "main")
+hotkeys.simple('tab', mainTabbed, "main")
+hotkeys.simple('tab', consoleTabbed, "console")
 hotkeys.add('s + b', setBpmPressed, "main")
 
 hotkeys.simple('1', digitPressed, "main")

@@ -9,6 +9,7 @@ canvas = None
 clearColor = '#ffffff'
 
 colors = {
+    '@transparent': 'transparent',
     '@clear': '#ffffff',
     '@neutral': '#ab9b87',
     '@fore': '#444444',
@@ -16,6 +17,7 @@ colors = {
     '@set': '#f5cb55',
     '@lightset': '#fbd979',
     '@darkset': '#ff9800',
+    '@highlight': '#4e8ccc',
     '@play': '#acd872',
     '@lightplay': '#c5ea93',
     '@darkplay': '#80a550',
@@ -106,7 +108,10 @@ class DrawStyle:
         if _isHexColor(value):
             result = _tupleFromHexColor(value)
         elif _isAliasColor(value):
-            result = self._transformColor(colors[value])
+            if value != 'transparent':
+                result = self._transformColor(colors[value])
+            else:
+                result = value
         else:
             raise Exception('unknown color format')
         return result
@@ -134,7 +139,8 @@ def rectangle(left, top, width, height, style):
 
     drawStyle = _styleRect(style)
 
-    pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
+    if drawStyle.fill != 'transparent':
+        pygame.draw.rect(canvas, drawStyle.fill, (x, y, w, h))
     if (drawStyle.lineWidth > 0):
         pygame.draw.rect(canvas, drawStyle.line, (x, y, w, h), drawStyle.lineWidth)
     
@@ -169,7 +175,7 @@ def clearCanvas():
     appendUpdateRect(0, 0, width, height)
 
 def clearRect(x, y, w, h):
-    pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (x, y, w, h))
+    rectangle(x, y, w, h, '@clear')
     appendUpdateRect(x, y, w, h)
 
 def appendUpdateRect(x, y, w, h):
@@ -344,7 +350,7 @@ def _isHexColor(value):
     return value[:1] == '#'
 
 def _isAliasColor(value):
-    return value[:1] == '@'
+    return value[:1] == '@' or value == 'transparent'
 
 def _isPoints(value):
     # this check may possible be stronger
