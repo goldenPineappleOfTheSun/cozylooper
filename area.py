@@ -1,3 +1,4 @@
+from utils import interpolate
 import drawing as draw
 
 class Area:
@@ -12,18 +13,18 @@ class Area:
         if not self.needHighlight:
             return
 
-        draw.clearRect(str(self.left) + 'cw - 5p', self.top, '0cw + 5p', self.height)
+        draw.clearRect(interpolate('{self.left}cw - 5p'), self.top, '0cw + 5p', self.height)
         draw.clearRect(self.left + self.width, self.top, '0cw + 5p', self.height)
-        draw.clearRect(str(self.left) + 'cw - 5p', str(self.top) + 'ch - 5p', str(self.width) + 'cw + 10p', '0ch + 5p')
-        draw.clearRect(str(self.left) + 'cw - 5p', self.top + self.height, str(self.width) + 'cw + 10p', '0ch + 5p')
+        draw.clearRect(interpolate('{self.left}cw - 5p'), interpolate('{self.top}ch - 5p'), interpolate('{self.width}cw + 10p'), '0ch + 5p')
+        draw.clearRect(interpolate('{self.left}cw - 5p'), self.top + self.height, interpolate('{self.width}cw + 10p'), '0ch + 5p')
 
     def highlight(self):
         if not self.needHighlight:
             return
         self.clearHighlight()
         draw.rectangle(
-            str(self.left) + 'cw - 3p', 
-            str(self.top) + 'ch - 3p', 
-            str(self.width) + 'cw + 6p', 
-            str(self.height) + 'ch + 6p', 
+            interpolate('{self.left}cw - 3p'), 
+            interpolate('{self.top}ch - 3p'), 
+            interpolate('{self.width}cw + 6p'), 
+            interpolate('{self.height}ch + 6p'), 
             '@transparent 5p @highlight')
