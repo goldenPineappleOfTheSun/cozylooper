@@ -169,11 +169,16 @@ def clearCanvas():
     appendUpdateRect(0, 0, width, height)
 
 def clearRect(x, y, w, h):
-    pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (coords.x(x), coords.y(y), coords.x(w), coords.y(h)))
+    pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (x, y, w, h))
     appendUpdateRect(x, y, w, h)
 
 def appendUpdateRect(x, y, w, h):
-    rect = pygame.Rect(x * cw, y * ch, w * cw, h * ch)
+    left = coords.x(x)
+    top = coords.y(y)
+    width = coords.x(w)
+    height = coords.y(h)
+
+    rect = pygame.Rect(left, top, width, height)
     for r in updates:
         newFullyContains = r.left >= rect.left and r.right <= rect.right and r.top >= rect.top and r.bottom <= rect.bottom 
         oldFullyContains = r.left <= rect.left and r.right >= rect.right and r.top <= rect.top and r.bottom >= rect.bottom
