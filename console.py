@@ -12,7 +12,8 @@ class Console:
         self.text = ''
         self.out = ''
         self.commands = {
-            'set-bpm': self.c_changeBpm
+            'set-bpm': self.c_changeBpm,
+            'set-track-size': self.c_setTrackLength
         }
         self.history = []
         self._historyPointer = 0
@@ -87,4 +88,40 @@ class Console:
         pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_BPM, {'value': bpm}))  
         return 'bpm changed'
 
+    def c_setTrackLength(self, arguments):
+        _args = consoleParser(arguments)
+        n = int(_args['named']['n'])
+        l = int(_args['named']['l'])
 
+        if type(n) != int or n < 1 or n > 12:
+            return 'ERROR: wrong track number'
+            raise Exception('wrong track number')
+
+        if type(l) != int or n < 1 or n > 16:
+            return 'ERROR: wrong length'
+            raise Exception('wrong length')
+
+        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_TRACK_SIZE, {'n': (n-1), 'length': l}))  
+        return 'track ' + str(n) + ' length changed'
+
+def consoleParser(arguments):
+    positional = []
+    named = {}
+    mode = 'none'
+    _argName = ''
+    for a in arguments:
+        if mode == 'named':
+            named[_argName] = a
+            mode = 'none'
+            continue
+        elif mode == 'none' and a[0] == '-':
+            mode = 'named'
+            _argName = a[1:]
+            continue
+        else:
+            positional.append(a)
+            continue
+    return {
+        "positional": positional,
+        "named": named
+    }

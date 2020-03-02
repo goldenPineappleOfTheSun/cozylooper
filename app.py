@@ -290,6 +290,8 @@ def main():
                     track.onHalfBeat()
             elif event.type == events.DEMAND_CHANGE_BPM:
                 metronome.setBpm(event.dict['value'])
+            elif event.type == events.DEMAND_CHANGE_TRACK_SIZE:
+                tracks[event.dict['n']].setSize(event.dict['length'])
 
 if __name__ == "__main__":
     main()

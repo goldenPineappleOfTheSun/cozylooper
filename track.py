@@ -100,7 +100,16 @@ class Track:
         self._inputSize += 1
         if (self._inputSize > 16):
             self._inputSize = 16
-        self.redraw()
+        self.redraw()    
+
+    def setSize(self, n):
+        self.state = TrackState.setSize
+        self._inputSize = n
+        if (self._inputSize > 16):
+            self._inputSize = 16
+        if (self._inputSize < 1):
+            self._inputSize = 1
+        self.confirm()
 
     def resetMemory(self, 
                     samplerate = 44100,   
