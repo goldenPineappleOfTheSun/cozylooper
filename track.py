@@ -5,6 +5,7 @@ import numpy as np
 import sounddevice as sd
 import drawing as draw
 from trackStates import TrackState
+import globalSettings as settings
 
 class Track:
     def __init__(self, n, behaviour, left = 0, top = 0):
@@ -72,7 +73,7 @@ class Track:
         if self.state == TrackState.setSize:
             self.size = self._inputSize
             self.state = TrackState.awaitingChanges
-            self.resetMemory(samplerate = 44100)
+            self.resetMemory(samplerate = settings.samplerate)
             self.redraw()
 
     def decreaseSize(self):

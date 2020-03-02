@@ -1,5 +1,6 @@
 import drawing as draw
 import math
+import globalSettings as settings
 
 class Tonearm:
     def __init__(self, left, top, size = 16, width = 1):
@@ -8,8 +9,10 @@ class Tonearm:
         self.top = top
         self.WIDTH = width
         self.pos = 0
+        # количество отсчитанных сэмплов
         self._pointer = 0
         self._lastPosition = 0
+        # сколько сэмплов помещается в дорожку 
         self._size = 1000
 
     def redraw(self):
@@ -43,7 +46,7 @@ class Tonearm:
                samplerate = 44100,   
                channels = 2):
         prev = self._pointer
-        self._pointer = (self._pointer + step) % self._size
+        self._pointer = (self._pointer + step * (settings.samplerate / 44100)) % self._size
         if prev > self._pointer:
             self.redrawWhole()
 

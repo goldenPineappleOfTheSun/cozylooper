@@ -24,5 +24,5 @@ def changeArea(new, func):
     if new in areas:
         areas[currentArea].clearHighlight()
         currentArea = new
-        print('select' + currentArea)
+        print('select ' + currentArea)
         areas[currentArea].highlight()

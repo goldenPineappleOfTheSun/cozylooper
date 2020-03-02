@@ -16,6 +16,7 @@ from track import Track
 from tonearm import Tonearm
 from loopDefault import LoopDefault
 from console import Console
+import globalSettings as settings
 
 """ Main Loop """
 streamTimeStart = 0
@@ -83,9 +84,9 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(indata, elapsed, frames = frames, samplerate = 44100)
+            track.write(indata, elapsed, frames = frames, samplerate = settings.samplerate)
         if track.canRead():
-            read = track.read(elapsed, frames = frames, samplerate = 44100)            
+            read = track.read(elapsed, frames = frames, samplerate = settings.samplerate)            
             outdata += reshapeSound(read, outdata.shape)
         """ 
         TODO: smooth
@@ -94,9 +95,15 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     read = metronome.readSound(frames)
     outdata += reshapeSound(read, outdata.shape)
 
-    tonearmA.moveBy(frames, metronome.bpm)
-    tonearmB.moveBy(frames, metronome.bpm)
-    metronome.moveBy(frames)
+    tonearmA.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
+    tonearmB.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
+    metronome.moveBy(frames, samplerate = settings.samplerate)
+
+def samplerateChanged(rate):
+    for track in tracks:
+        track.resetMemory(samplerate = settings.samplerate)
+    tonearmA.resetSize(metronome.bpm, samplerate = settings.samplerate)
+    tonearmB.resetSize(metronome.bpm, samplerate = settings.samplerate)
 
 def reshapeSound(sound, shape):
     if sound.shape[0] != shape[0]:
@@ -124,9 +131,9 @@ def playTrack(n, e):
 def bpmChanged(bpm):
     for track in tracks:
         track.setBpm(bpm)
-        track.resetMemory(samplerate = 44100)
-    tonearmA.resetSize(bpm, samplerate = 44100)
-    tonearmB.resetSize(bpm, samplerate = 44100)
+        track.resetMemory(samplerate = settings.samplerate)
+    tonearmA.resetSize(bpm, samplerate = settings.samplerate)
+    tonearmB.resetSize(bpm, samplerate = settings.samplerate)
 
 def processConsoleCommand(event):
     console.processCommand()
@@ -292,6 +299,9 @@ def main():
                 metronome.setBpm(event.dict['value'])
             elif event.type == events.DEMAND_CHANGE_TRACK_SIZE:
                 tracks[event.dict['n']].setSize(event.dict['length'])
+            elif event.type == events.DEMAND_CHANGE_SAMPLERATE:
+                settings.samplerate = event.dict['value']
+                samplerateChanged(event.dict['value'])
 
 if __name__ == "__main__":
     main()

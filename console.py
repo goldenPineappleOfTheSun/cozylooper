@@ -13,7 +13,8 @@ class Console:
         self.out = ''
         self.commands = {
             'set-bpm': self.c_changeBpm,
-            'set-track-size': self.c_setTrackLength
+            'set-track-size': self.c_setTrackLength,
+            'set-samplerate': self.c_setSamplerate
         }
         self.history = []
         self._historyPointer = 0
@@ -54,7 +55,12 @@ class Console:
     def processCommand(self):
         parts = self.text.split(' ')
         if not parts[0] in self.commands:
-            raise Exception('no such command: ' + parts[0])
+            self.out = 'ERROR: no such command!'
+            self.history.append(self.text)
+            self._historyPointer = -1
+            self.text = ''
+            self.redraw()
+            return
 
         self.out = self.commands[parts[0]](parts[1:])
         self.history.append(self.text)
@@ -103,6 +109,18 @@ class Console:
 
         pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_TRACK_SIZE, {'n': (n-1), 'length': l}))  
         return 'track ' + str(n) + ' length changed'
+
+    def c_setSamplerate(self, arguments):
+        rates = [8000, 11025, 22050, 32000, 48000, 44100]
+        _args = consoleParser(arguments)
+        s = int(arguments[0])
+
+        if not type(s) == int or s not in rates:
+            return 'ERROR: wrong samplerate value'
+            raise Exception('wrong samplerate value')
+
+        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_SAMPLERATE, {'value': s}))  
+        return 'samplerate changed'
 
 def consoleParser(arguments):
     positional = []
