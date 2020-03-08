@@ -17,6 +17,7 @@ from tonearm import Tonearm
 from loopDefault import LoopDefault
 from console import Console
 import globalSettings as settings
+from listOfCommandsWide import ListOfCommandsWide
 
 """ Main Loop """
 streamTimeStart = 0
@@ -48,6 +49,7 @@ tonearmA = Tonearm(size = 16, left = 5, top = marginTop)
 tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
 console = Console(1, 26, 32)
+listOfCommandsWide = ListOfCommandsWide()
 
 def start():   
     global metronome
@@ -111,14 +113,15 @@ def reshapeSound(sound, shape):
     return sound
 
 def mainTabbed(event):
-    looperAreas.changeArea(
-        'console',
-        lambda: console.activate())
+    looperAreas.changeArea('wide')
+
+def wideTabbed(event):
+    looperAreas.changeArea('console', func = lambda: console.activate())
 
 def consoleTabbed(event):
     looperAreas.changeArea(
         'main',
-        lambda: console.deactivate())
+        func = lambda: console.deactivate())
 
 def playTrack(n, e):
     if keyboard.is_pressed('space'):
@@ -181,6 +184,12 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
+#def wideRight(event):
+#    looperAreas.wideRight()
+
+#def wideLeft(event):
+#    looperAreas.wideLeft()
+
 def consoleKeyboardInput(key):
     console.input(key)
 
@@ -192,6 +201,7 @@ def nextCommand(event):
 
 hotkeys.simple('b', bPressed, "main")
 hotkeys.simple('tab', mainTabbed, "main")
+hotkeys.simple('tab', wideTabbed, "wide")
 hotkeys.simple('tab', consoleTabbed, "console")
 hotkeys.add('s + b', setBpmPressed, "main")
 
@@ -252,6 +262,9 @@ hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
 
+#hotkeys.simple('right', wideRight, "wide")
+#hotkeys.simple('left', wideLeft, "wide")
+
 hotkeys.processText(consoleKeyboardInput, "console")
 hotkeys.simple('enter', processConsoleCommand, "console")
 hotkeys.simple('up', prevCommand, "console")
@@ -302,6 +315,8 @@ def main():
             elif event.type == events.DEMAND_CHANGE_SAMPLERATE:
                 settings.samplerate = event.dict['value']
                 samplerateChanged(event.dict['value'])
+            elif event.type == events.SHOW_LIST_OF_COMMANDS:
+                listOfCommandsWide.redraw()
 
 if __name__ == "__main__":
     main()

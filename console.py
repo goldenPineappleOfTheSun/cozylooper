@@ -14,7 +14,8 @@ class Console:
         self.commands = {
             'set-bpm': self.c_changeBpm,
             'set-track-size': self.c_setTrackLength,
-            'set-samplerate': self.c_setSamplerate
+            'set-samplerate': self.c_setSamplerate,
+            'commands': self.c_listCommands
         }
         self.history = []
         self._historyPointer = 0
@@ -69,6 +70,8 @@ class Console:
         self.redraw()
 
     def prevCommand(self):
+        if len(self.history) == 0:
+            return
         if self._historyPointer > 0:
             self._historyPointer -= 1
         if self._historyPointer == -1:
@@ -77,6 +80,8 @@ class Console:
         self.redraw()
 
     def nextCommand(self):
+        if len(self.history) == 0:
+            return
         if self._historyPointer < len(self.history) - 1:
             self._historyPointer += 1
         self.text = self.history[self._historyPointer]
@@ -121,6 +126,10 @@ class Console:
 
         pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_SAMPLERATE, {'value': s}))  
         return 'samplerate changed'
+
+    def c_listCommands(self, arguments):
+        pygame.event.post(pygame.event.Event(events.SHOW_LIST_OF_COMMANDS)) 
+        return 'list of commands shown'
 
 def consoleParser(arguments):
     positional = []
