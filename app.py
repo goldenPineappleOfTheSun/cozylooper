@@ -32,7 +32,12 @@ def selectArea(areaname):
     currentArea = areaname
 
 marginTop = 1
+
+#TODO: возможность выбора устройств
 wire = Wire(inputDevice = 8, outputDevice = 8)
+if (sd.query_devices(wire.inputDevice)['name'] != 'Yamaha Steinberg USB ASIO'):
+    raise Exception('NOPE! ' + sd.query_devices(wire.inputDevice)['name'])
+
 metronome = Metronome(120, left = 16, top = marginTop)
 tracks = [
     Track(0, LoopDefault, 1, marginTop),
