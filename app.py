@@ -19,6 +19,7 @@ from console import Console
 import globalSettings as settings
 from listOfCommandsWide import ListOfCommandsWide
 from listOfDevicesWide import ListOfDevicesWide
+import processor
 
 """ Main Loop """
 streamTimeStart = 0
@@ -91,10 +92,12 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            track.write(indata, elapsed, frames = frames, samplerate = settings.samplerate)
+            data = processor.stereoToMono(indata)
+            track.write(data, elapsed, frames = frames, samplerate = settings.samplerate)
         if track.canRead():
-            read = track.read(elapsed, frames = frames, samplerate = settings.samplerate)            
-            outdata += reshapeSound(read, outdata.shape)
+            read = track.read(elapsed, frames = frames, samplerate = settings.samplerate)         
+            data = processor.monoToStereo(read)
+            outdata += reshapeSound(data, outdata.shape)
         """ 
         TODO: smooth
         track.fade(indata, elapsed, frames = frames)

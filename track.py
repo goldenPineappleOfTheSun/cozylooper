@@ -22,7 +22,7 @@ class Track:
         self.HEIGHT = 17
         self._initDraw = True
         self.bufferSize = sd.default.blocksize
-        self.memory = np.empty([2000, 2], )
+        self.memory = np.empty(2000)
 
         """ 
         TODO: smooth
@@ -114,24 +114,22 @@ class Track:
 
     def resetMemory(self, 
                     samplerate = 44100,   
-                    blocksize = sd.default.blocksize, 
-                    channels = 2):
+                    blocksize = sd.default.blocksize):
         size = int(samplerate * (60 / self.bpm) * self.size)
         self._memorySize = size
-        self.memory = np.empty([size + blocksize, channels], )
+        self.memory = np.empty(size + blocksize, )
         self.histogram = [0] * 16
         samplesPerFade = int(samplerate * 0.1)
-        self.fadeInMemory = np.zeros([samplesPerFade, channels], )
+        self.fadeInMemory = np.zeros(samplesPerFade, )
         self._fadeInPointer = 0
-        self.fadeOutMemory = np.zeros([samplesPerFade, channels], )
+        self.fadeOutMemory = np.zeros(samplesPerFade, )
         self._fadeOutPointer = -1
         self.redraw()
 
     def read(self, 
              timeinfo,
              samplerate = 44100,   
-             frames = sd.default.blocksize, 
-             channels = 2):
+             frames = sd.default.blocksize):
         result = np.array(self.memory[self._pos:self._pos+frames])
         self._pos = (self._pos + frames) % self._memorySize
         return result
@@ -273,8 +271,7 @@ class Track:
               indata, 
               timeinfo,
               samplerate = 44100,   
-              frames = sd.default.blocksize, 
-              channels = 2):
+              frames = sd.default.blocksize):
         for i in range(0, frames):
             if len(self.memory) > self._pos + i:
                 self.memory[self._pos + i] = indata[i]
