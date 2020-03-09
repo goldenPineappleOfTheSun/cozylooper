@@ -15,7 +15,8 @@ class Console:
             'set-bpm': self.c_changeBpm,
             'set-track-size': self.c_setTrackLength,
             'set-samplerate': self.c_setSamplerate,
-            'commands': self.c_listCommands
+            'commands': self.c_listCommands,
+            'devices': self.c_listDevices
         }
         self.history = []
         self._historyPointer = 0
@@ -96,7 +97,7 @@ class Console:
             return 'ERROR: wrong bpm value'
             raise Exception('wrong bpm value')
 
-        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_BPM, {'value': bpm}))  
+        events.emit('DEMAND_CHANGE_BPM', {'value': bpm})  
         return 'bpm changed'
 
     def c_setTrackLength(self, arguments):
@@ -112,7 +113,7 @@ class Console:
             return 'ERROR: wrong length'
             raise Exception('wrong length')
 
-        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_TRACK_SIZE, {'n': (n-1), 'length': l}))  
+        events.emit('DEMAND_CHANGE_TRACK_SIZE', {'n': (n-1), 'length': l})
         return 'track ' + str(n) + ' length changed'
 
     def c_setSamplerate(self, arguments):
@@ -124,12 +125,16 @@ class Console:
             return 'ERROR: wrong samplerate value'
             raise Exception('wrong samplerate value')
 
-        pygame.event.post(pygame.event.Event(events.DEMAND_CHANGE_SAMPLERATE, {'value': s}))  
+        events.emit('DEMAND_CHANGE_SAMPLERATE', {'value': s})  
         return 'samplerate changed'
 
     def c_listCommands(self, arguments):
-        pygame.event.post(pygame.event.Event(events.SHOW_LIST_OF_COMMANDS)) 
+        events.emit('SHOW_LIST_OF_COMMANDS', {})
         return 'list of commands shown'
+
+    def c_listDevices(self, arguments):
+        events.emit('SHOW_LIST_OF_DEVICES', {})
+        return 'list of devices shown'
 
 def consoleParser(arguments):
     positional = []

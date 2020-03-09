@@ -18,6 +18,7 @@ from loopDefault import LoopDefault
 from console import Console
 import globalSettings as settings
 from listOfCommandsWide import ListOfCommandsWide
+from listOfDevicesWide import ListOfDevicesWide
 
 """ Main Loop """
 streamTimeStart = 0
@@ -48,8 +49,12 @@ tracks = [
 tonearmA = Tonearm(size = 16, left = 5, top = marginTop)
 tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
-console = Console(1, 26, 32)
+console = Console(1, 27, 32)
+
+"""Wides"""
 listOfCommandsWide = ListOfCommandsWide()
+listOfDevicesWide = ListOfDevicesWide()
+currentWide = listOfCommandsWide
 
 def start():   
     global metronome
@@ -273,7 +278,7 @@ hotkeys.simple('down', nextCommand, "console")
 def main():
     pygame.init()
     #pygame.midi.init()
-    draw.init(34, 29)
+    draw.init(34, 30)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)
     pygame.display.set_caption("Looper")
@@ -293,9 +298,9 @@ def main():
             if event.type == pygame.QUIT:
                 close()
                 running = False
-            elif event.type == events.BPM_CHANGED_EVENT:
+            elif events.check(event, 'BPM_CHANGED'):
                 bpmChanged(event.dict['bpm'])
-            elif event.type == events.BPM_TICK:
+            elif events.check(event, 'BPM_TICK'):
                 beat = event.dict['beat']
                 tick()
                 for track in tracks:
@@ -304,19 +309,25 @@ def main():
                         track.onBar()
                     if (beat % 16) == 0:
                         track.onGlobalLoop()
-            elif event.type == events.BPM_HALF_TICK:
+            elif events.check(event, 'BPM_HALF_TICK'):
                 beat = event.dict['beat']
                 for track in tracks:
                     track.onHalfBeat()
-            elif event.type == events.DEMAND_CHANGE_BPM:
+            elif events.check(event, 'DEMAND_CHANGE_BPM'):
                 metronome.setBpm(event.dict['value'])
-            elif event.type == events.DEMAND_CHANGE_TRACK_SIZE:
+            elif events.check(event, 'DEMAND_CHANGE_TRACK_SIZE'):
                 tracks[event.dict['n']].setSize(event.dict['length'])
-            elif event.type == events.DEMAND_CHANGE_SAMPLERATE:
+            elif events.check(event, 'DEMAND_CHANGE_SAMPLERATE'):
                 settings.samplerate = event.dict['value']
                 samplerateChanged(event.dict['value'])
-            elif event.type == events.SHOW_LIST_OF_COMMANDS:
+            elif events.check(event, 'SHOW_LIST_OF_COMMANDS'):
+                currentWide = listOfCommandsWide
+                currentWide.redrawTitle()
                 listOfCommandsWide.redraw()
+            elif events.check(event, 'SHOW_LIST_OF_DEVICES'):
+                currentWide = listOfDevicesWide
+                currentWide.redrawTitle()
+                listOfDevicesWide.redraw()
 
 if __name__ == "__main__":
     main()

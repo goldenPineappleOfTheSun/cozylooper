@@ -3,8 +3,8 @@ import time
 
 areas = {
     'main': Area(0, 0, 10, 10, needHighlight = False),
-    'wide': Area(1, 19, 32, 6),
-    "console": Area(1, 26, 32, 2)
+    'wide': Area(1, 19, 32, 7),
+    "console": Area(1, 27, 32, 2)
 }
 
 currentArea = "main"

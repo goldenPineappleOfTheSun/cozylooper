@@ -84,11 +84,11 @@ class Metronome:
 
     def onBeat(self):   
         self.highPitched = False if self.beatNumber % 4 != 0 else True
-        pygame.event.post(pygame.event.Event(events.BPM_TICK, {'beat': self.beatNumber}))  
+        events.emit('BPM_TICK', {'beat': self.beatNumber})
         self._readyToSound = True 
 
     def onHalfBeat(self):   
-        pygame.event.post(pygame.event.Event(events.BPM_HALF_TICK, {'beat': self.beatNumber}))  
+        events.emit('BPM_HALF_TICK', {'beat': self.beatNumber})
 
     def playSound(self):
         self._soundTonearm = 0
@@ -144,7 +144,8 @@ class Metronome:
         self.bpm = bpm
         self.redraw()
         self.resetSize(self.bpm)
-        pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
+        events.emit('BPM_CHANGED', {'bpm': self.bpm})
+        #pygame.event.post(pygame.event.Event(events.BPM_CHANGED_EVENT, {'bpm': self.bpm}))
 
     def readSound(self, frames):
         if self._soundTonearm > self._soundSize:
