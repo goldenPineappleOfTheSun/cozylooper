@@ -9,5 +9,5 @@ class AreaWide():
         self.HEIGHT = 6
 
     @abstractmethod
-    def redrawTitle():
+    def redrawTitle(self):
         pass

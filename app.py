@@ -189,11 +189,13 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
-#def wideRight(event):
-#    looperAreas.wideRight()
+def wideRight(event):
+    if "rightPressed" in dir(currentWide):
+        currentWide.rightPressed()
 
-#def wideLeft(event):
-#    looperAreas.wideLeft()
+def wideLeft(event):
+    if "leftPressed" in dir(currentWide):
+        currentWide.leftPressed()
 
 def consoleKeyboardInput(key):
     console.input(key)
@@ -267,8 +269,8 @@ hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
 
-#hotkeys.simple('right', wideRight, "wide")
-#hotkeys.simple('left', wideLeft, "wide")
+hotkeys.simple('right', wideRight, "wide")
+hotkeys.simple('left', wideLeft, "wide")
 
 hotkeys.processText(consoleKeyboardInput, "console")
 hotkeys.simple('enter', processConsoleCommand, "console")
@@ -276,8 +278,9 @@ hotkeys.simple('up', prevCommand, "console")
 hotkeys.simple('down', nextCommand, "console")
 
 def main():
+    global currentWide
+
     pygame.init()
-    #pygame.midi.init()
     draw.init(34, 30)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)

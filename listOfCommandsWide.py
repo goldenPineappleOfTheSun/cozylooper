@@ -25,3 +25,13 @@ class ListOfCommandsWide(AreaWide):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);
         draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
         draw.text('Список команд', self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
+
+    def rightPressed(self):
+        if (self.page + 1) * 6 < len(self.commands):
+            self.page += 1
+            self.redraw()
+
+    def leftPressed(self):
+        if self.page > 0:
+            self.page -= 1
+            self.redraw()

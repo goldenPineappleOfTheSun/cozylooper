@@ -22,3 +22,14 @@ class ListOfDevicesWide(AreaWide):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);
         draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
         draw.text('Список доступных устройств', self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
+
+    def rightPressed(self):
+        devices = sd.query_devices()
+        if (self.page + 1) * 6 < len(devices):
+            self.page += 1
+            self.redraw()
+
+    def leftPressed(self):
+        if self.page > 0:
+            self.page -= 1
+            self.redraw()
