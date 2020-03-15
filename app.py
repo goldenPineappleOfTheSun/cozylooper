@@ -20,6 +20,7 @@ import globalSettings as settings
 from listOfCommandsWide import ListOfCommandsWide
 from listOfDevicesWide import ListOfDevicesWide
 import processor
+from soundbank import Soundbank
 
 """ Main Loop """
 streamTimeStart = 0
@@ -56,6 +57,7 @@ tonearmA = Tonearm(size = 16, left = 5, top = marginTop)
 tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
 console = Console(1, 27, 32)
+soundbank = Soundbank()
 
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
@@ -64,6 +66,9 @@ currentWide = listOfCommandsWide
 
 def start():   
     global metronome
+    global soundbank
+
+    print(soundbank.isFolderExists('test'))
 
     bpmChanged(metronome.bpm)
     wire.start(callback = wireCallback) 
@@ -97,7 +102,7 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
     for track in tracks:
         if track.canWrite():
-            data = processor.stereoToMono(indata)
+            data = processor.stereoToMono(indata, 1)
             track.write(data, elapsed, frames = frames, samplerate = settings.samplerate)
         if track.canRead():
             read = track.read(elapsed, frames = frames, samplerate = settings.samplerate)         
