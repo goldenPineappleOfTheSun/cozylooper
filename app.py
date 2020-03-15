@@ -68,8 +68,6 @@ def start():
     global metronome
     global soundbank
 
-    print(soundbank.isFolderExists('test'))
-
     bpmChanged(metronome.bpm)
     wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
@@ -344,6 +342,14 @@ def main():
                 currentWide = listOfDevicesWide
                 currentWide.redrawTitle()
                 listOfDevicesWide.redraw()
+            elif events.check(event, 'LOAD_FOLDER'):
+                if not soundbank.folderExists(event.dict['path']):
+                    console.print('no such folder')
+                soundbank.loadFolder(event.dict['path'])
+            elif events.check(event, 'loadBankFromFolder'):
+                if not soundbank.folderExists(event.dict['path']):
+                    console.print('no such folder')
+                soundbank.loadFolder(event.dict['path'], event.dict['bank'])
 
 if __name__ == "__main__":
     main()

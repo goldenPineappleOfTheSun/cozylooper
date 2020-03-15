@@ -204,10 +204,10 @@ class Soundbank:
             "d16": 44100
         }      
 
-    def isFolderExists(self, path):
+    def folderExists(self, path):
         return os.path.exists('samples/' + path)
 
-    def isFileExists(self, path):
+    def fileExists(self, path):
         if os.path.isFile('samples/' + path):
             if file.endswith(".wav") or file.endswith(".mp3"):
                 sample = os.path.basename(file.split('.')[0])
@@ -221,7 +221,7 @@ class Soundbank:
         self.samples[sample] = sound
         self.samplerates[sample] = soundSamplerate
         self.sizes[sample] = np.shape(sound)
-        print(self.sizes[sample])
+        print(sample + ' ' + path + ' ' + str(self.sizes[sample][0]))
 
     def loadFolder(self, path):
         for file in os.listdir('samples/' + path):

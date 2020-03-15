@@ -16,7 +16,8 @@ class Console:
             'set-track-size': self.c_setTrackLength,
             'set-samplerate': self.c_setSamplerate,
             'commands': self.c_listCommands,
-            'devices': self.c_listDevices
+            'devices': self.c_listDevices,
+            'load-bank': self.c_loadBank
         }
         self.history = []
         self._historyPointer = 0
@@ -52,6 +53,10 @@ class Console:
             self.nextCommand()
             return
         self.text += key
+        self.redraw()
+
+    def print(self, text):
+        self.out = text
         self.redraw()
 
     def processCommand(self):
@@ -135,6 +140,18 @@ class Console:
     def c_listDevices(self, arguments):
         events.emit('SHOW_LIST_OF_DEVICES', {})
         return 'list of devices shown'
+
+    def c_loadBank(self, arguments):
+        _args = consoleParser(arguments)
+        _named = _args['named']
+        path = arguments[0]
+        n = _args['named'] if 'n' in _named else None
+        if n == None:
+            events.emit('LOAD_FOLDER', {'path': path})
+            return 'all banks from ' + path + ' have been loaded'
+        else:
+            events.emit('LOAD_BANK', {'path': path, 'bank': n})
+            return 'all banks ' + n + ' from ' + path + ' have been loaded'
 
 def consoleParser(arguments):
     positional = []
