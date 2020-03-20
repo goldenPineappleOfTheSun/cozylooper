@@ -335,8 +335,9 @@ def main():
                 settings.samplerate = event.dict['value']
                 samplerateChanged(event.dict['value'])
             elif events.check(event, 'SHOW_LIST_OF_COMMANDS'):
-                currentWide = listOfCommandsWide
+                currentWide = listOfCommandsWide                
                 currentWide.redrawTitle()
+                listOfCommandsWide.setCommands(event.dict['commands'])
                 listOfCommandsWide.redraw()
             elif events.check(event, 'SHOW_LIST_OF_DEVICES'):
                 currentWide = listOfDevicesWide

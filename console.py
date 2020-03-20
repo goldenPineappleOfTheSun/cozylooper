@@ -17,7 +17,7 @@ class Console:
             'set-samplerate': self.c_setSamplerate,
             'commands': self.c_listCommands,
             'devices': self.c_listDevices,
-            'load-bank': self.c_loadBank
+            'load-bank': self.c_loadBank,
         }
         self.history = []
         self._historyPointer = 0
@@ -134,7 +134,7 @@ class Console:
         return 'samplerate changed'
 
     def c_listCommands(self, arguments):
-        events.emit('SHOW_LIST_OF_COMMANDS', {})
+        events.emit('SHOW_LIST_OF_COMMANDS', {'commands': self.commands.keys()})
         return 'list of commands shown'
 
     def c_listDevices(self, arguments):

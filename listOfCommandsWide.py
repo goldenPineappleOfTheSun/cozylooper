@@ -5,21 +5,30 @@ from utils import interpolate
 class ListOfCommandsWide(AreaWide):
     def __init__(self, left = 1, top = 19):
         super().__init__(left, top)
-        self.commands = [
-            'set-bpm - [ударов в сек]',
-            'set-track-size - -n [номер] -s [размер]',
-            'set-samplerate - [частота сэмплирования]',
-            'commands - список команд',
-            'devices - список устройств',
-        ]
+        self.commands = {
+            'set-bpm': '[ударов в сек]',
+            'set-track-size': 'n [номер] -s [размер]',
+            'set-samplerate': '[частота сэмплирования]',
+            'commands': 'список команд',
+            'devices': 'список устройств',
+        }
         self.page = 0
-    
+
+    def setCommands(self, list):
+        for cmd in list:
+            if not cmd in self.commands:
+                self.commands[cmd] = ''
+
     def redraw(self):
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT);
         draw.rectangle(self.left, self.top + 1, self.WIDTH, self.HEIGHT, '@light')
-        for index in range(self.page * 6, self.page * 6 + 6):
-            if index < len(self.commands):
-                draw.text(self.commands[index], self.left, self.top + 1 + index % 6, '#333333 console topleft')
+        keys = self.commands.keys()
+        index = 0
+        for key in keys:
+            if index >= self.page * 6 and index < self.page * 6 + 6 and index < len(keys):
+                value = self.commands[key]
+                draw.text(interpolate('{key} - {value}'), self.left, self.top + 1 + index % 6, '#333333 console topleft')
+            index += 1
 
     def redrawTitle(self):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);
