@@ -3,15 +3,16 @@ import drawing as draw
 from utils import interpolate
 
 class ListOfCommandsWide(AreaWide):
-    def __init__(self, left = 1, top = 19):
-        super().__init__(left, top)
+    def __init__(self):
+        super().__init__(1, 19)
         self.commands = {
             'set-bpm': '[ударов в сек]',
             'set-track-size': 'n [номер] -s [размер]',
             'set-samplerate': '[частота сэмплирования]',
             'commands': 'список команд',
             'devices': 'список устройств',
-            'load-bank': '[папка] -n [буква]'
+            'load-bank': '[папка] -n [буква]',
+            'create-instrument': '[инструмент piano] [канал 0-15]'
         }
         self.page = 0
 

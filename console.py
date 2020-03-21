@@ -18,6 +18,8 @@ class Console:
             'commands': self.c_listCommands,
             'devices': self.c_listDevices,
             'load-bank': self.c_loadBank,
+            'create-instrument': self.c_createInstrument,
+            'piano': self.c_piano
         }
         self.history = []
         self._historyPointer = 0
@@ -152,6 +154,25 @@ class Console:
         else:
             events.emit('LOAD_BANK', {'path': path, 'bank': n})
             return 'all banks ' + n + ' from ' + path + ' have been loaded'
+
+    def c_createInstrument(self, arguments):
+        _args = consoleParser(arguments)
+        t = arguments[0]
+        n = arguments[1]
+        if t == None:
+            return 'need to specify type'
+        if n == None:
+            return 'need to specify channel'
+        events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
+        return t + ' has been created'
+
+    def c_piano(self, arguments):
+        _args = consoleParser(arguments)
+        t = 'piano'
+        n = arguments[0] if len(arguments) > 0 else 0
+        events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
+        return t + ' has been created'
+
 
 def consoleParser(arguments):
     positional = []

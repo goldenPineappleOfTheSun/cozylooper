@@ -50,6 +50,7 @@ def init(w, h, cellWidth = 16, cellHeight = 16, initialCanvas = None):
     canvas = initialCanvas
     fontsCollection['default'] = pygame.font.Font(None, 16)
     setNewFont('console', 'lucida-console 12')
+    setNewFont('tiny', 'open-sans 10')
 
 def setCanvas(value):
     global canvas
@@ -330,7 +331,7 @@ def _coordsFromString(value):
             x = parts[i]
             if not _isCells(x):
                 raise Exception('wrong cells format ("' + value + '")!')
-            result += _xFromNumber(int(x[:-2])) if x[-2:] == 'cw' else _yFromNumber(int(x[:-2]))
+            result += _xFromNumber(float(x[:-2])) if x[-2:] == 'cw' else _yFromNumber(int(x[:-2]))
         elif i == 1:
             x = parts[i]
             if not _isUnaryOperator(x):

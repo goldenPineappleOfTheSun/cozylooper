@@ -22,6 +22,8 @@ from listOfDevicesWide import ListOfDevicesWide
 import processor
 from soundbank import Soundbank
 from samplesController import SamplesController
+from midiController import MidiController 
+from midiPiano import MidiPiano
 
 """ Main Loop """
 streamTimeStart = 0
@@ -60,6 +62,7 @@ clock = pygame.time.Clock()
 console = Console(1, 27, 32)
 soundbank = Soundbank()
 sampler = SamplesController(soundbank)
+midi = MidiController()
 
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
@@ -205,6 +208,10 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
+def wideEnter(event):
+    if "enterPressed" in dir(currentWide):
+        currentWide.enterPressed()    
+
 def wideRight(event):
     if "rightPressed" in dir(currentWide):
         currentWide.rightPressed()
@@ -212,6 +219,38 @@ def wideRight(event):
 def wideLeft(event):
     if "leftPressed" in dir(currentWide):
         currentWide.leftPressed()
+
+def wideDigit(event):
+    # some strange arrows bug !!!
+    if (event.name == 'up'
+    or event.name == 'down'
+    or event.name == 'left'
+    or event.name == 'right'
+    or event.name == 'page up'
+    or event.name == 'page down'):
+        return
+    if "digitPressed" in dir(currentWide):
+        currentWide.digitPressed(int(event.name))
+
+def wideA(event):
+    if "aPressed" in dir(currentWide):
+        currentWide.aPressed()
+
+def wideB(event):
+    if "bPressed" in dir(currentWide):
+        currentWide.bPressed()
+
+def wideC(event):
+    if "cPressed" in dir(currentWide):
+        currentWide.cPressed()
+
+def wideD(event):
+    if "dPressed" in dir(currentWide):
+        currentWide.dPressed()
+
+def wideR(event):
+    if "rPressed" in dir(currentWide):
+        currentWide.rPressed()
 
 def consoleKeyboardInput(key):
     console.input(key)
@@ -285,8 +324,24 @@ hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
 
+hotkeys.simple('enter', wideEnter, "wide")
 hotkeys.simple('right', wideRight, "wide")
 hotkeys.simple('left', wideLeft, "wide")
+hotkeys.simple('1', wideDigit, "wide")
+hotkeys.simple('2', wideDigit, "wide")
+hotkeys.simple('3', wideDigit, "wide")
+hotkeys.simple('4', wideDigit, "wide")
+hotkeys.simple('5', wideDigit, "wide")
+hotkeys.simple('6', wideDigit, "wide")
+hotkeys.simple('7', wideDigit, "wide")
+hotkeys.simple('8', wideDigit, "wide")
+hotkeys.simple('9', wideDigit, "wide")
+hotkeys.simple('0', wideDigit, "wide")
+hotkeys.simple('a', wideA, "wide")
+hotkeys.simple('b', wideB, "wide")
+hotkeys.simple('c', wideC, "wide")
+hotkeys.simple('d', wideD, "wide")
+hotkeys.simple('r', wideR, "wide")
 
 hotkeys.processText(consoleKeyboardInput, "console")
 hotkeys.simple('enter', processConsoleCommand, "console")
@@ -295,6 +350,7 @@ hotkeys.simple('down', nextCommand, "console")
 
 def main():
     global currentWide
+    global midi
 
     pygame.init()
     draw.init(34, 30)
@@ -358,6 +414,17 @@ def main():
                 soundbank.loadBankFromFolder(event.dict['path'], event.dict['bank'])
             elif events.check(event, 'UPDATE_SAMPLE'):
                 sampler.updateSample(event.dict['name'])
+            elif events.check(event, 'CREATE_INSTRUMENT'):
+                type = event.dict['type']
+                if type == 'piano':
+                    piano = MidiPiano(event.dict['n'], sampler)
+                    midi.appendChannel(event.dict['n'], piano)
+                    currentWide = piano
+                    currentWide.redrawTitle()
+                    currentWide.redraw()
+                else:
+                    console.print('no such type of instrument')
+
 
 if __name__ == "__main__":
     main()
