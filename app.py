@@ -62,7 +62,7 @@ clock = pygame.time.Clock()
 console = Console(1, 27, 32)
 soundbank = Soundbank()
 sampler = SamplesController(soundbank)
-midi = MidiController()
+midi = MidiController(sampler)
 
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
@@ -353,6 +353,7 @@ def main():
     global midi
 
     pygame.init()
+    pygame.midi.init()
     draw.init(34, 30)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)
@@ -368,6 +369,7 @@ def main():
     # main loop
     while running:  
         clock.tick(60)
+        midi.update()
         update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -414,11 +416,14 @@ def main():
                 soundbank.loadBankFromFolder(event.dict['path'], event.dict['bank'])
             elif events.check(event, 'UPDATE_SAMPLE'):
                 sampler.updateSample(event.dict['name'])
+            elif events.check(event, 'WIRE_MIDI'):
+                midi.wireChannel(event.dict['instrument'], event.dict['device'])
             elif events.check(event, 'CREATE_INSTRUMENT'):
                 type = event.dict['type']
                 if type == 'piano':
-                    piano = MidiPiano(event.dict['n'], sampler)
-                    midi.appendChannel(event.dict['n'], piano)
+                    n = event.dict['n']
+                    piano = MidiPiano(n, sampler)
+                    midi.appendChannel(n, piano)
                     currentWide = piano
                     currentWide.redrawTitle()
                     currentWide.redraw()

@@ -1,4 +1,5 @@
 import numpy as np
+from utils import interpolate
 from soundingSample import SoundingSample
 
 class SamplesController:
@@ -8,10 +9,11 @@ class SamplesController:
         self.sizes = dict.fromkeys(soundbank.names, [])
         self.currents = []
 
-    def play(self, name, options = {}):
+    def play(self, name, options = {}, channel = 99, key = 0):
+        code = interpolate('{channel}-{key}')
         if (not name in self.finals) or len(self.finals[name]) < 100:
             return
-        self.currents.append(SoundingSample(self, name, options))
+        self.currents.append(SoundingSample(self, code, name, options))
 
     def read(self, frames):
         result = np.zeros(frames)

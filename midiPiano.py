@@ -20,11 +20,29 @@ class MidiPiano():
         self.selected = 12
         self.inputpointer = 0
 
+    def getKeyRect(self, n):
+        positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
+        x = str(self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]) + 'cw + 1p'
+        w = '1cw - ' + str(1 if self.isWhiteKey(n) else 2) + 'p'
+        return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)
+
+    def getKeyRectAsNums(self, n):
+        positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
+        x = self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]
+        w = 1
+        return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)
+
+    def isWhiteKey(self, n):
+        return (n % 12) in [0, 2, 4, 5, 7, 9, 11]
+
     """ for wide """
     def redrawTitle(self):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);
         draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
         draw.text('Пианино ' + str(self.n), self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
+
+    def press(self, note, strengh):
+        self.sampler.play(self.samples[note], channel = self.n, key = note)
 
     """ in wide """
     def redraw(self):        
@@ -32,17 +50,17 @@ class MidiPiano():
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT);
         draw.rectangle(self.left, self.top + 1, self.WIDTH, 1, '@light')
         draw.rectangle(self.left, self.top + self.HEIGHT, self.WIDTH, 1, '@light')
-        draw.rectangle(self.left + self.WIDTH - 1, self.top + 1, 1, self.HEIGHT, '@light')
+        draw.rectangle(self.left + self.WIDTH - 4, self.top + 1, 4, self.HEIGHT, '@light')
         draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
-        draw.rectangle(self.left + kl, self.top + 2, 24, self.HEIGHT - 2, '@clear')
+        draw.rectangle(self.left + kl, self.top + 2, kl + 14, self.HEIGHT - 2, '@clear')
         self.redrawKeys()
         self.select('note', 11)
 
     def redrawKeys(self):
         kl = self.KEYBOARDLEFT
-        for i in range(1, 24):
+        for i in range(1, 21):
             draw.line(self.left + kl + i, self.top + 4, self.left + kl + i, self.top + self.HEIGHT, '@neutral')
-        for i in [3, 7, 10, 14, 17, 21]:
+        for i in [3, 7, 10, 14, 17]:
             draw.line(self.left + kl + i, self.top + 2, self.left + kl + i, self.top + self.HEIGHT - 2, '@neutral')
 
         draw.rectangle(self.left + kl + 0 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
@@ -51,9 +69,8 @@ class MidiPiano():
         draw.rectangle(self.left + kl + 10 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
         draw.rectangle(self.left + kl + 14 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
         draw.rectangle(self.left + kl + 17 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 21 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
 
-        for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20, 22]:
+        for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
             draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
 
     def redrawKey(self, n, isselected = False):
@@ -91,21 +108,6 @@ class MidiPiano():
             draw.text(text[0], textrect[0] + 0.5, textrect[1] + 0.7, textcolor + ' console center')
             draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.3, textcolor + ' tiny center')
 
-    def isWhiteKey(self, n):
-        return (n % 12) in [0, 2, 4, 5, 7, 9, 11]
-
-    def getKeyRect(self, n):
-        positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
-        x = str(self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]) + 'cw + 1p'
-        w = '1cw - ' + str(1 if self.isWhiteKey(n) else 2) + 'p'
-        return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)
-
-    def getKeyRectAsNums(self, n):
-        positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
-        x = self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]
-        w = 1
-        return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)
-
     def select(self, type, n):
         if self.selectedType != type or self.selected != n:
             if self.selectedType == 'note':
@@ -132,7 +134,7 @@ class MidiPiano():
     # wide events
 
     def enterPressed(self):
-        self.sampler.play(self.samples[self.selected + self.camera])
+        self.sampler.play(self.samples[self.selected + self.camera], channel = 99, key = self.selected + self.camera)
 
     def rightPressed(self):
         self.select('note', self.selected + 1)

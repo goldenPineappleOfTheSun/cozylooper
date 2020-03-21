@@ -19,6 +19,7 @@ class Console:
             'devices': self.c_listDevices,
             'load-bank': self.c_loadBank,
             'create-instrument': self.c_createInstrument,
+            'wire-midi': self.c_wireMidi,
             'piano': self.c_piano
         }
         self.history = []
@@ -165,6 +166,13 @@ class Console:
             return 'need to specify channel'
         events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
         return t + ' has been created'
+
+    def c_wireMidi(self, arguments):
+        _args = consoleParser(arguments)
+        instrument = int(arguments[0])
+        device = int(arguments[1])
+        events.emit('WIRE_MIDI', {'instrument': instrument, 'device': device})
+        return str(instrument) + ' wired to ' + str(device)
 
     def c_piano(self, arguments):
         _args = consoleParser(arguments)

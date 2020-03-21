@@ -2,7 +2,8 @@ import numpy as np
 
 
 class SoundingSample:
-    def __init__(self, controller, name, options):
+    def __init__(self, controller, code, name, options):
+        self.code = code
         self.controller = controller
         self.name = name
         self.options = options
