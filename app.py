@@ -21,6 +21,7 @@ from listOfCommandsWide import ListOfCommandsWide
 from listOfDevicesWide import ListOfDevicesWide
 import processor
 from soundbank import Soundbank
+from samplesController import SamplesController
 
 """ Main Loop """
 streamTimeStart = 0
@@ -58,6 +59,7 @@ tonearmB = Tonearm(size = 16, left = 10, top = marginTop)
 clock = pygame.time.Clock()
 console = Console(1, 27, 32)
 soundbank = Soundbank()
+sampler = SamplesController(soundbank)
 
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
@@ -112,6 +114,9 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
         """
     read = metronome.readSound(frames)
     outdata += reshapeSound(read, outdata.shape)
+
+    fromSamples = processor.monoToStereo(sampler.read(frames))
+    outdata += reshapeSound(fromSamples, outdata.shape)
 
     tonearmA.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
     tonearmB.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
@@ -275,6 +280,23 @@ hotkeys.simple('f10', lambda e: playTrack(9, e), "main")
 hotkeys.simple('f11', lambda e: playTrack(10, e), "main")
 hotkeys.simple('f12', lambda e: playTrack(11, e), "main")
 
+def play1(event):
+    global sampler
+    sampler.play('a01')
+hotkeys.simple('1', play1, "main")
+
+def stop2(event):
+    global sampler
+    sampler.stopAll()
+hotkeys.simple('2', stop2, "main")
+
+def play3(event):
+    global sampler
+    sampler.play('a01', options = {
+        'loop': 'forever'
+        })
+hotkeys.simple('3', play3, "main")
+
 hotkeys.simple('backspace', backspacePressed, "main")
 hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
@@ -347,10 +369,12 @@ def main():
                 if not soundbank.folderExists(event.dict['path']):
                     console.print('no such folder')
                 soundbank.loadFolder(event.dict['path'])
-            elif events.check(event, 'loadBankFromFolder'):
+            elif events.check(event, 'LOAD_BANK'):
                 if not soundbank.folderExists(event.dict['path']):
                     console.print('no such folder')
-                soundbank.loadFolder(event.dict['path'], event.dict['bank'])
+                soundbank.loadBankFromFolder(event.dict['path'], event.dict['bank'])
+            elif events.check(event, 'UPDATE_SAMPLE'):
+                sampler.updateSample(event.dict['name'])
 
 if __name__ == "__main__":
     main()

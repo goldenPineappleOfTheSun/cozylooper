@@ -11,6 +11,7 @@ class ListOfCommandsWide(AreaWide):
             'set-samplerate': '[частота сэмплирования]',
             'commands': 'список команд',
             'devices': 'список устройств',
+            'load-bank': '[папка] -n [буква]'
         }
         self.page = 0
 
