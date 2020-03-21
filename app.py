@@ -280,23 +280,6 @@ hotkeys.simple('f10', lambda e: playTrack(9, e), "main")
 hotkeys.simple('f11', lambda e: playTrack(10, e), "main")
 hotkeys.simple('f12', lambda e: playTrack(11, e), "main")
 
-def play1(event):
-    global sampler
-    sampler.play('a01')
-hotkeys.simple('1', play1, "main")
-
-def stop2(event):
-    global sampler
-    sampler.stopAll()
-hotkeys.simple('2', stop2, "main")
-
-def play3(event):
-    global sampler
-    sampler.play('a01', options = {
-        'loop': 'forever'
-        })
-hotkeys.simple('3', play3, "main")
-
 hotkeys.simple('backspace', backspacePressed, "main")
 hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
