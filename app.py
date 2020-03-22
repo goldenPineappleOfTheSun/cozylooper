@@ -68,6 +68,7 @@ midi = MidiController(sampler)
 listOfCommandsWide = ListOfCommandsWide()
 listOfDevicesWide = ListOfDevicesWide()
 currentWide = listOfCommandsWide
+currentSide = None
 
 def start():   
     global metronome
@@ -137,6 +138,10 @@ def reshapeSound(sound, shape):
     return sound
 
 def mainTabbed(event):
+    print('!')
+    looperAreas.changeArea('side')
+
+def sideTabbed(event):
     looperAreas.changeArea('wide')
 
 def wideTabbed(event):
@@ -145,6 +150,20 @@ def wideTabbed(event):
 def consoleTabbed(event):
     looperAreas.changeArea(
         'main',
+        func = lambda: console.deactivate())
+
+def mainReTabbed():
+    looperAreas.changeArea('console')
+
+def sideReTabbed():
+    looperAreas.changeArea('main')
+
+def wideReTabbed():
+    looperAreas.changeArea('side', func = lambda: console.activate())
+
+def consoleReTabbed():
+    looperAreas.changeArea(
+        'wide',
         func = lambda: console.deactivate())
 
 def playTrack(n, e):
@@ -263,6 +282,7 @@ def nextCommand(event):
 
 hotkeys.simple('b', bPressed, "main")
 hotkeys.simple('tab', mainTabbed, "main")
+hotkeys.simple('tab', sideTabbed, "side")
 hotkeys.simple('tab', wideTabbed, "wide")
 hotkeys.simple('tab', consoleTabbed, "console")
 hotkeys.add('s + b', setBpmPressed, "main")
@@ -350,6 +370,7 @@ hotkeys.simple('down', nextCommand, "console")
 
 def main():
     global currentWide
+    global currentSide
     global midi
 
     pygame.init()
