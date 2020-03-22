@@ -7,7 +7,9 @@ class MidiPads():
 
     def __init__(self, n, sampler):
         self.n = n
-        self.samples = np.full((9 * 12), None)
+        self.samples = np.full((4 * 16), None)
+        self.colors = np.full((4 * 16), None)
+        self.COLORS = ['@neutral', '#92504f', '#f97b6a', '#90a8d0', '#035084', '#96dbde', '#9896a3', '#de4831', '#b28e6a', '#76c453']
         self.sampler = sampler
         self.volume = 0.5
         self.left = 16
@@ -20,6 +22,12 @@ class MidiPads():
         self.selectedType = 'key'
         self.selected = 0
         self.inputpointer = 0
+
+    def press(self, note, strengh):
+        n = note - 48
+        if n < 0 or n > len(self.samples):
+            return
+        self.sampler.play(self.samples[n], channel = self.n, key = note)
 
     """ for side """
     def redrawTitle(self):
@@ -46,6 +54,11 @@ class MidiPads():
         draw.clearRect(rect[0], rect[1], rect[2], rect[3])
         draw.rectangle(rect[0], rect[1], rect[2], rect[3], style)
 
+        textrect = (x, y, 1, 1)
+        textcolor = '@clear' if isselected == False else '@dark'
+        if text != None:
+            draw.text(text, textrect[0], textrect[1], textcolor + ' console topleft')
+
     def redrawKeys(self):
         left = self.KEYBOARDLEFT
         top = self.KEYBOARDTOP
@@ -70,6 +83,16 @@ class MidiPads():
         if type == 'key':
             self.redrawKey(n, True)
 
+    def setBankForSelectedKey(self, bank):
+        sel = self.selected + self.page * 16
+        text = self.samples[sel]
+        if text == None:
+            text = bank + '01'
+        else:
+            text = bank + text[1:3]
+        self.samples[sel] = text
+        self.select('key', self.selected)
+        self.inputpointer = 0
 
     # wide events
 
@@ -84,3 +107,35 @@ class MidiPads():
 
     def downPressed(self):
         self.select('key', self.selected + 4)
+
+    def digitPressed(self, n):
+        if self.selectedType == 'key':
+            sel = self.selected + self.page * 16
+            if self.samples[sel] == None:
+                return
+
+            text = self.samples[sel]
+
+            if self.inputpointer == 0 and n < 2:
+                self.samples[sel] = text[0:1] + str(n) + text[2:3]
+                self.inputpointer = 1
+                self.select('key', self.selected)
+            elif self.inputpointer == 1 and n < 7 and (n != 0 or text[1:2] != '0'):
+                self.samples[sel] = text[0:2] + str(n)
+                self.inputpointer = 0
+                self.select('key', self.selected)
+
+    def aPressed(self):
+        self.setBankForSelectedKey('a')
+
+    def bPressed(self):
+        self.setBankForSelectedKey('b')
+
+    def cPressed(self):
+        self.setBankForSelectedKey('c')
+
+    def dPressed(self):
+        self.setBankForSelectedKey('d')
+
+    def rPressed(self):
+        self.setBankForSelectedKey('r')

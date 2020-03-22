@@ -331,7 +331,7 @@ def _coordsFromString(value):
             x = parts[i]
             if not _isCells(x):
                 raise Exception('wrong cells format ("' + value + '")!')
-            result += _xFromNumber(float(x[:-2])) if x[-2:] == 'cw' else _yFromNumber(int(x[:-2]))
+            result += _xFromNumber(float(x[:-2])) if x[-2:] == 'cw' else _yFromNumber(float(x[:-2]))
         elif i == 1:
             x = parts[i]
             if not _isUnaryOperator(x):

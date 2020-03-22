@@ -30,11 +30,9 @@ class MidiController:
                 continue
             for msg in self.inputs[i].read(100):
                 command = (msg[0][0] & 240) >> 4
-                print(command)
                 if command == 8:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
-                    print('off ' + str(note))
                 if command == 9:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
@@ -43,6 +41,5 @@ class MidiController:
                     instrument.press(note, strength)
                     """sample = instrument.samples[note]
                     self.sampler.play(ch"""
-                    print('on ' + str(note))
 
 
