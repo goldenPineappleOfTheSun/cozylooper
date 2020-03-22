@@ -54,7 +54,7 @@ class MidiPiano():
         draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
         draw.rectangle(self.left + kl, self.top + 2, kl + 14, self.HEIGHT - 2, '@clear')
         self.redrawKeys()
-        self.select('note', 11)
+        #self.select('note', 11)
 
     def redrawKeys(self):
         kl = self.KEYBOARDLEFT
@@ -137,9 +137,13 @@ class MidiPiano():
         self.sampler.play(self.samples[self.selected + self.camera], channel = 99, key = self.selected + self.camera)
 
     def rightPressed(self):
+        if self.selected > 34:
+            return
         self.select('note', self.selected + 1)
 
     def leftPressed(self):
+        if self.selected < 1:
+            return
         self.select('note', self.selected - 1)
 
     def digitPressed(self, n):

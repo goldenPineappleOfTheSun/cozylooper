@@ -41,7 +41,7 @@ class MidiPads():
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT);
         draw.rectangle(self.left, self.top + 1, self.WIDTH, self.HEIGHT - 1, '@light')
         self.redrawKeys()
-        self.select('key', 0)
+        #self.select('key', 0)
 
     def redrawKey(self, n, isselected = False):
         text = self.samples[n + self.page * 16]
@@ -97,15 +97,23 @@ class MidiPads():
     # wide events
 
     def rightPressed(self):
+        if self.selected % 4 > 2:
+            return
         self.select('key', self.selected + 1)
 
     def leftPressed(self):
+        if self.selected % 4 < 1:
+            return
         self.select('key', self.selected - 1)
 
     def upPressed(self):
+        if self.selected < 4:
+            return
         self.select('key', self.selected - 4)
 
     def downPressed(self):
+        if self.selected > 11:
+            return
         self.select('key', self.selected + 4)
 
     def digitPressed(self, n):
