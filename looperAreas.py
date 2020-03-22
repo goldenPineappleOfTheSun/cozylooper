@@ -3,7 +3,7 @@ import time
 
 areas = {
     'main': Area(0, 0, 10, 10, needHighlight = False),
-    'side': Area(17, 3, 15, 15),
+    'side': Area(16, 3, 17, 15),
     'wide': Area(1, 19, 32, 7),
     "console": Area(1, 27, 32, 2)
 }

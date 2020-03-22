@@ -20,7 +20,8 @@ class Console:
             'load-bank': self.c_loadBank,
             'create-instrument': self.c_createInstrument,
             'wire-midi': self.c_wireMidi,
-            'piano': self.c_piano
+            'piano': self.c_piano,
+            'pads': self.c_pads
         }
         self.history = []
         self._historyPointer = 0
@@ -165,7 +166,7 @@ class Console:
         if n == None:
             return 'need to specify channel'
         events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
-        return t + ' has been created'
+        return t + ' been created'
 
     def c_wireMidi(self, arguments):
         _args = consoleParser(arguments)
@@ -180,6 +181,13 @@ class Console:
         n = arguments[0] if len(arguments) > 0 else 0
         events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
         return t + ' has been created'
+
+    def c_pads(self, arguments):
+        _args = consoleParser(arguments)
+        t = 'pads'
+        n = arguments[0] if len(arguments) > 0 else 0
+        events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
+        return t + ' had been created'
 
 
 def consoleParser(arguments):

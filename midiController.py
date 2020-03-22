@@ -3,6 +3,7 @@ import pygame
 import pygame.midi
 
 class MidiController:
+
     def __init__(self, sampler):
         self.channels = np.full((16), None)
         self.inputs = np.full((16), None)
@@ -11,10 +12,14 @@ class MidiController:
     def appendChannel(self, n, midiInstrument):
         if n < 0 or n > 15:
             return
+        if self.channels[n] != None:
+            raise 'channel is used!'
         self.channels[n] = midiInstrument
 
+    def isChannelUsed(self, n):
+        return self.channels[n] != None
+
     def wireChannel(self, device, instr):
-        print(instr)
         self.inputs[device] = pygame.midi.Input(instr)
 
     def update(self):

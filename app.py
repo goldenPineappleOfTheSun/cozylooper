@@ -24,6 +24,7 @@ from soundbank import Soundbank
 from samplesController import SamplesController
 from midiController import MidiController 
 from midiPiano import MidiPiano
+from midiPads import MidiPads
 
 """ Main Loop """
 streamTimeStart = 0
@@ -271,6 +272,59 @@ def wideR(event):
     if "rPressed" in dir(currentWide):
         currentWide.rPressed()
 
+def sideEnter(event):
+    if "enterPressed" in dir(currentSide):
+        currentSide.enterPressed()    
+
+def sideRight(event):
+    print(currentSide)
+    if "rightPressed" in dir(currentSide):
+        currentSide.rightPressed()
+
+def sideLeft(event):
+    if "leftPressed" in dir(currentSide):
+        currentSide.leftPressed()
+
+def sideUp(event):
+    if "upPressed" in dir(currentSide):
+        currentSide.upPressed()
+
+def sideDown(event):
+    if "downPressed" in dir(currentSide):
+        currentSide.downPressed()
+
+def sideDigit(event):
+    # some strange arrows bug !!!
+    if (event.name == 'up'
+    or event.name == 'down'
+    or event.name == 'left'
+    or event.name == 'right'
+    or event.name == 'page up'
+    or event.name == 'page down'):
+        return
+    if "digitPressed" in dir(currentSide):
+        currentSide.digitPressed(int(event.name))
+
+def sideA(event):
+    if "aPressed" in dir(currentSide):
+        currentSide.aPressed()
+
+def sideB(event):
+    if "bPressed" in dir(currentSide):
+        currentSide.bPressed()
+
+def sideC(event):
+    if "cPressed" in dir(currentSide):
+        currentSide.cPressed()
+
+def sideD(event):
+    if "dPressed" in dir(currentSide):
+        currentSide.dPressed()
+
+def sideR(event):
+    if "rPressed" in dir(currentSide):
+        currentSide.rPressed()
+
 def consoleKeyboardInput(key):
     console.input(key)
 
@@ -343,6 +397,27 @@ hotkeys.simple('backspace', backspacePressed, "main")
 hotkeys.simple('enter', enterPressed, "main")
 hotkeys.simple('space', spacePressed, "main")
 hotkeys.simple('esc', escPressed, "main")
+
+hotkeys.simple('enter', sideEnter, "side")
+hotkeys.simple('right', sideRight, "side")
+hotkeys.simple('left', sideLeft, "side")
+hotkeys.simple('up', sideUp, "side")
+hotkeys.simple('down', sideDown, "side")
+hotkeys.simple('1', sideDigit, "side")
+hotkeys.simple('2', sideDigit, "side")
+hotkeys.simple('3', sideDigit, "side")
+hotkeys.simple('4', sideDigit, "side")
+hotkeys.simple('5', sideDigit, "side")
+hotkeys.simple('6', sideDigit, "side")
+hotkeys.simple('7', sideDigit, "side")
+hotkeys.simple('8', sideDigit, "side")
+hotkeys.simple('9', sideDigit, "side")
+hotkeys.simple('0', sideDigit, "side")
+hotkeys.simple('a', sideA, "side")
+hotkeys.simple('b', sideB, "side")
+hotkeys.simple('c', sideC, "side")
+hotkeys.simple('d', sideD, "side")
+hotkeys.simple('r', sideR, "side")
 
 hotkeys.simple('enter', wideEnter, "wide")
 hotkeys.simple('right', wideRight, "wide")
@@ -441,15 +516,33 @@ def main():
                 midi.wireChannel(event.dict['instrument'], event.dict['device'])
             elif events.check(event, 'CREATE_INSTRUMENT'):
                 type = event.dict['type']
-                if type == 'piano':
-                    n = event.dict['n']
-                    piano = MidiPiano(n, sampler)
-                    midi.appendChannel(n, piano)
-                    currentWide = piano
-                    currentWide.redrawTitle()
-                    currentWide.redraw()
+                n = event.dict['n']  
+                widecreated = False
+                sidecreated = False
+
+                if not midi.isChannelUsed(n):
+                    if type == 'piano':                  
+                        piano = MidiPiano(n, sampler)
+                        currentWide = piano
+                        widecreated = True
+                    elif type == 'pads':
+                        pads = MidiPads(n, sampler)
+                        currentSide = pads
+                        sidecreated = True
+                    else:
+                        console.print('no such type of instrument')
+                    
+                    if widecreated:             
+                        midi.appendChannel(n, currentWide)
+                        currentWide.redrawTitle()
+                        currentWide.redraw()
+                    if sidecreated:             
+                        midi.appendChannel(n, currentSide)
+                        currentSide.redrawTitle()
+                        currentSide.redraw()
                 else:
-                    console.print('no such type of instrument')
+                    console.print('channel is used')
+
 
 
 if __name__ == "__main__":
