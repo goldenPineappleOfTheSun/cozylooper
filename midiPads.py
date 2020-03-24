@@ -1,6 +1,7 @@
 import numpy as np
 import drawing as draw
 import math
+import utils
 from utils import interpolate
 from areaSide import AreaSide
 
@@ -29,6 +30,15 @@ class MidiPads(AreaSide):
 
     def getType(self):
         return 'piano'
+
+    def load(self, filename, console):
+        dict = utils.readSaveFile(filename)
+        for i in range(0, len(self.samples)):
+            x = 'map ' + str(i)
+            if x in dict:
+                print(x)
+                self.samples[i] = dict[x]
+        self.redraw()
 
     def press(self, note, strengh):
         n = note - 48
@@ -77,6 +87,17 @@ class MidiPads(AreaSide):
                     draw.line(self.left + left, self.top + top + y * 2, self.left + left + 8, self.top + top + y * 2, '@light')
                 if y == 3:
                     draw.line(self.left + left + x * 2, self.top + top, self.left + left + x * 2, self.top + top + 8, '@light')
+        for i in range(0, 16):
+            self.redrawKey(i)
+
+    def save(self, path):
+        file = open(path, 'a')
+        file.write(interpolate('type: pads\n'))
+        for i, s in enumerate(self.samples):
+            if s == None:
+                continue
+            file.write(interpolate('map {i}: {s}\n'))
+        file.close()
 
     def select(self, type, n):
         if self.selectedType != type or self.selected != n:

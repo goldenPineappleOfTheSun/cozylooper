@@ -54,7 +54,10 @@ class MidiController:
             channel = self.channels[i]
             if channel == None:
                 continue
-            device = str(pygame.midi.get_device_info(self.wires[i]))
+
+            device = 'None'
+            if self.wires[i] != None:
+                device = str(pygame.midi.get_device_info(self.wires[i]))
 
             file = open(interpolate('{path}/channel_{i}.save'), 'w+')
             file.write(interpolate('channel: {i}\n'))
