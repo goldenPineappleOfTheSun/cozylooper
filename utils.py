@@ -15,9 +15,6 @@ def overload(value, string = None, integer = None, real = None, number = None):
 def callOverload(value, string, integer, real, number = None):
     overload(value, string, integer, real, number)(value)
 
-def interpolate(text):
-    return text.format(**sys._getframe(1).f_locals)
-
 def countPositionalArguments(func):
     all_args = func.__code__.co_argcount
 
@@ -27,3 +24,17 @@ def countPositionalArguments(func):
         kwargs = 0
 
     return all_args - kwargs
+
+def interpolate(text):
+    return text.format(**sys._getframe(1).f_locals)
+
+def readSaveFile(path):
+    result = {}
+    file = open(path, 'r')
+    for line in file:
+        data = line.split(':')
+        key = data[0].strip()
+        value = data[1].strip()
+        result[key] = value
+    file.close()
+    return result

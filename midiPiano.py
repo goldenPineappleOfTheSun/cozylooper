@@ -1,6 +1,7 @@
 import numpy as np
 import drawing as draw
 import math
+import utils
 from utils import interpolate
 from areaWide import AreaWide
 
@@ -21,9 +22,6 @@ class MidiPiano(AreaWide):
         self.selected = 12
         self.inputpointer = 0
 
-    def getSaveName(self):
-        return 'midiPiano ' + str(self.n)
-
     def getKeyRect(self, n):
         positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
         x = str(self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]) + 'cw + 1p'
@@ -36,17 +34,32 @@ class MidiPiano(AreaWide):
         w = 1
         return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)
 
+    def getSaveName(self):
+        return 'midiPiano ' + str(self.n)
+
+    def getType(self):
+        return 'piano'
+
     def isWhiteKey(self, n):
         return (n % 12) in [0, 2, 4, 5, 7, 9, 11]
+
+    def load(self, filename, console):
+        dict = utils.readSaveFile(filename)
+        for i in range(0, len(self.samples)):
+            x = 'map ' + str(i)
+            if x in dict:
+                print(x)
+                self.samples[i] = dict[x]
+        self.redraw()
+
+    def press(self, note, strengh):
+        self.sampler.play(self.samples[note], channel = self.n, key = note)
 
     """ for wide """
     def redrawTitle(self):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);
         draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
         draw.text('Пианино ' + str(self.n), self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
-
-    def press(self, note, strengh):
-        self.sampler.play(self.samples[note], channel = self.n, key = note)
 
     """ in wide """
     def redraw(self):        
@@ -76,6 +89,9 @@ class MidiPiano(AreaWide):
 
         for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
             draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
+
+        for i in range(0, 24):
+            self.redrawKey(i)
 
     def redrawKey(self, n, isselected = False):
         if self.isWhiteKey(n):

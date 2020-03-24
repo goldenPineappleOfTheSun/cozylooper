@@ -1,5 +1,8 @@
 import numpy as np
 import pygame
+import utils
+import os
+import customevents as events
 from utils import interpolate
 import pygame.midi
 
@@ -18,10 +21,35 @@ class MidiController:
             raise 'channel is used!'
         self.channels[n] = midiInstrument
 
+    def findDeviceByName(self, name):
+        devices = []
+        for i in range( 0, pygame.midi.get_count() ):
+            if name == str(pygame.midi.get_device_info(i)):
+                return i
+        return None
+
     def isChannelUsed(self, n):
         return self.channels[n] != None
 
-    def save (self, path):    
+    def load(self, path, console):
+        for i in range(0, 16):
+            filename = interpolate('{path}/channel_{i}.save')
+            if not os.path.isfile(filename):
+                continue
+
+            dict = utils.readSaveFile(filename)
+            t = dict['type']
+            channel = dict['channel']
+            device = self.findDeviceByName(dict['device'])
+            console.emulate(interpolate('create-instrument {t} {channel}'))
+            if device != None:
+                console.emulate(interpolate('wire-midi {channel} {device}'))
+            events.emit('LOAD_INSTRUMENT', {'n': i, 'filename': filename})
+            """if self.channels[i] != None:
+                self.channels[i].load(filename, console)"""
+
+
+    def save(self, path):    
         for i in range(0, 16):
             channel = self.channels[i]
             if channel == None:

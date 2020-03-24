@@ -9,6 +9,7 @@ from area import Area
 import looperAreas
 import drawing as draw
 import keyboard
+import utils
 from utils import interpolate
 import hotkeys
 import sounddevice as sd
@@ -98,6 +99,31 @@ def close():
     wire.stop()
     print('stop!')
 
+def load(foldername):
+    global console
+
+    path = 'saves/' + foldername
+    if not os.path.exists(path):
+        return
+
+    dict = utils.readSaveFile(path + '/app.save')
+    wide = dict['current_wide']
+    side = dict['current_side']
+
+    midi.load(path, console)
+
+    if wide != None:
+        data = wide.split(' ')
+        if data[0] == 'midiPiano':
+            n = data[1]
+            console.emulate(interpolate('piano {n}'))
+
+    if side != None:
+        data = wide.split(' ')
+        if data[0] == 'midiPads':
+            n = data[1]
+            console.emulate(interpolate('pads {n}'))
+
 def save(foldername):
     path = 'saves/' + foldername
     if not os.path.exists(path):
@@ -167,7 +193,6 @@ def reshapeSound(sound, shape):
     return sound
 
 def mainTabbed(event):
-    print('!')
     looperAreas.changeArea('side')
 
 def sideTabbed(event):
@@ -499,6 +524,8 @@ def main():
             if event.type == pygame.QUIT:
                 close()
                 running = False
+            elif events.check(event, 'EMULATE_CONSOLE'):
+                console.emulate(event.dict['command'])
             elif events.check(event, 'BPM_CHANGED'):
                 bpmChanged(event.dict['bpm'])
             elif events.check(event, 'BPM_TICK'):
@@ -569,10 +596,30 @@ def main():
                         currentSide.redrawTitle()
                         currentSide.redraw()
                 else:
-                    console.print('channel is used')
+                    if midi.channels[n].getType() == type:
+                        if type == 'piano':
+                            currentWide = midi.channels[n]
+                            currentWide.redrawTitle()
+                            currentWide.redraw()
+                        if type == 'pads':
+                            currentSide = midi.channels[n]
+                            currentSide.redrawTitle()
+                            currentSide.redraw()
+                        console.print('channel already exists. now displayed')
+                    else:
+                        console.print('channel is used')
             elif events.check(event, 'SAVE'):
                 save(event.dict['name'])
-
+            elif events.check(event, 'LOAD'):
+                load(event.dict['name'])
+            elif events.check(event, 'LOAD_INSTRUMENT'):
+                if midi.channels[event.dict['n']] == None and (not 'repeats' in event.dict or event.dict['repeats'] < 10000):
+                    repeats = events.dict['repeats'] if 'repeats' in event.dict else 10000
+                    events.emit('LOAD_INSTRUMENT', {'n': events.dict['n'], 'filename': events.dict['filename'], 'repeats': repeats})
+                elif 'repeats' in event.dict and event.dict['repeats'] >= 10000:
+                    print('MANY REPEATS for LOAD_INSTRUMENT')
+                else:
+                    midi.channels[event.dict['n']].load(event.dict['filename'], console)
 
 
 if __name__ == "__main__":

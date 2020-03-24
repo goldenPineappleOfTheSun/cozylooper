@@ -22,7 +22,8 @@ class Console:
             'wire-midi': self.c_wireMidi,
             'piano': self.c_piano,
             'pads': self.c_pads,
-            'save': self.c_save
+            'save': self.c_save,
+            'load': self.c_load
         }
         self.history = []
         self._historyPointer = 0
@@ -33,6 +34,24 @@ class Console:
 
     def deactivate(self):
         self.active = False
+        self.text = ''
+        self.redraw()
+
+    def emulate(self, cmd, saveHistory = False):
+        print('"' + cmd + '"')
+        parts = cmd.split(' ')
+        if not parts[0] in self.commands:
+            self.out = 'ERROR: no such command!'
+            if saveHistory:
+                self.history.append(cmd)
+                self._historyPointer = -1
+                self.text = ''
+            self.redraw()
+            return
+
+        self.out = self.commands[parts[0]](parts[1:])
+        self.history.append(self.text)
+        self._historyPointer = -1
         self.text = ''
         self.redraw()
 
@@ -65,20 +84,7 @@ class Console:
         self.redraw()
 
     def processCommand(self):
-        parts = self.text.split(' ')
-        if not parts[0] in self.commands:
-            self.out = 'ERROR: no such command!'
-            self.history.append(self.text)
-            self._historyPointer = -1
-            self.text = ''
-            self.redraw()
-            return
-
-        self.out = self.commands[parts[0]](parts[1:])
-        self.history.append(self.text)
-        self._historyPointer = -1
-        self.text = ''
-        self.redraw()
+        self.emulate(self.text,True)
 
     def prevCommand(self):
         if len(self.history) == 0:
@@ -195,6 +201,12 @@ class Console:
         name = arguments[0]
         events.emit('SAVE', {'name': name})
         return 'saved as ' + name
+
+    def c_load(self, arguments):
+        _args = consoleParser(arguments)
+        name = arguments[0]
+        events.emit('LOAD', {'name': name})
+        return name + ' loaded'
 
 
 def consoleParser(arguments):

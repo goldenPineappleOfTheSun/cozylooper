@@ -27,6 +27,9 @@ class MidiPads(AreaSide):
     def getSaveName(self):
         return 'midiPads ' + str(self.n)
 
+    def getType(self):
+        return 'piano'
+
     def press(self, note, strengh):
         n = note - 48
         if n < 0 or n > len(self.samples):
