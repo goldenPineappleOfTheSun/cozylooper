@@ -23,7 +23,10 @@ class Soundbank:
         return False
 
     def load(self, sample, path):
-        sound, soundSamplerate = sf.read('samples' + path, dtype='float32')  
+        self._load(sample, 'samples' + path)
+
+    def _load(self, sample, path):
+        sound, soundSamplerate = sf.read(path, dtype='float32')  
         sound = processor.stereoToMono(sound, 0)
         self.samples[sample] = sound
         self.samplerates[sample] = soundSamplerate
@@ -49,3 +52,28 @@ class Soundbank:
         if not name in self.names:
             return []
         return self.samples[name]
+
+    def savesSave(self, foldername):
+        path = foldername + '/samples/'
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for filename in os.listdir(path):
+            filepath = os.path.join(path, filename)
+            try:
+                if os.path.isfile(filepath) or os.path.islink(filepath):
+                    os.unlink(filepath)
+                elif os.path.isdir(filepath):
+                    shutil.rmtree(filepath)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (filepath, e))
+
+        for name in self.names:
+            if len(self.samples[name]) > 0:
+                sf.write(path + name + '.wav', self.samples[name], self.samplerates[name])
+
+    def savesLoad(self, foldername, console):
+        for file in os.listdir(foldername + '/samples'):
+            if file.endswith(".wav") or file.endswith(".mp3"):
+                sample = os.path.basename(file.split('.')[0])
+                if sample in self.samples:
+                    self._load(sample, foldername + '/samples/' + file)

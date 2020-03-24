@@ -110,6 +110,8 @@ def load(foldername):
     wide = dict['current_wide']
     side = dict['current_side']
 
+    soundbank.savesLoad(path, console)
+    sampler.load(path, console)
     midi.load(path, console)
 
     if wide != None:
@@ -147,6 +149,8 @@ def save(foldername):
     file.write(interpolate('current_side: {cside}\n'))
     file.close()
 
+    soundbank.savesSave(path)
+    sampler.save(path)
     midi.save(path)
 
 def tick():    

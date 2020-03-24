@@ -24,7 +24,8 @@ class MidiController:
     def findDeviceByName(self, name):
         devices = []
         for i in range( 0, pygame.midi.get_count() ):
-            if name == str(pygame.midi.get_device_info(i)):
+            print(name[:-2] + '   ' + str(pygame.midi.get_device_info(i))[:-2])
+            if name[:-2] == str(pygame.midi.get_device_info(i))[:-2]:
                 return i
         return None
 
@@ -47,7 +48,6 @@ class MidiController:
             events.emit('LOAD_INSTRUMENT', {'n': i, 'filename': filename})
             """if self.channels[i] != None:
                 self.channels[i].load(filename, console)"""
-
 
     def save(self, path):    
         for i in range(0, 16):
