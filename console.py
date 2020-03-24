@@ -21,7 +21,8 @@ class Console:
             'create-instrument': self.c_createInstrument,
             'wire-midi': self.c_wireMidi,
             'piano': self.c_piano,
-            'pads': self.c_pads
+            'pads': self.c_pads,
+            'save': self.c_save
         }
         self.history = []
         self._historyPointer = 0
@@ -188,6 +189,12 @@ class Console:
         n = arguments[0] if len(arguments) > 0 else 0
         events.emit('CREATE_INSTRUMENT', {'type': t, 'n': int(n)})
         return t + ' had been created'
+
+    def c_save(self, arguments):
+        _args = consoleParser(arguments)
+        name = arguments[0]
+        events.emit('SAVE', {'name': name})
+        return 'saved as ' + name
 
 
 def consoleParser(arguments):

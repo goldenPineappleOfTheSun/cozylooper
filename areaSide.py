@@ -7,5 +7,9 @@ class AreaSide():
         self.HEIGHT = 15
 
     @abstractmethod
+    def getSaveName(self):
+        pass
+
+    @abstractmethod
     def redrawTitle(self):
         pass

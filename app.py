@@ -1,5 +1,7 @@
 from multiprocessing import Process
 import pygame
+import os
+import shutil
 import pygame.midi
 import numpy as np
 import time
@@ -7,6 +9,7 @@ from area import Area
 import looperAreas
 import drawing as draw
 import keyboard
+from utils import interpolate
 import hotkeys
 import sounddevice as sd
 import customevents as events
@@ -91,13 +94,38 @@ def update():
     global _suspitiousFunctionKeysLag
     _suspitiousFunctionKeysLag -= 1
 
-def tick():    
-    tonearmA.update()
-    tonearmB.update()
-
 def close():
     wire.stop()
     print('stop!')
+
+def save(foldername):
+    path = 'saves/' + foldername
+    if not os.path.exists(path):
+        os.mkdir(path)
+    for filename in os.listdir(path):
+        filepath = os.path.join(path, filename)
+        try:
+            if os.path.isfile(filepath) or os.path.islink(filepath):
+                os.unlink(filepath)
+            elif os.path.isdir(filepath):
+                shutil.rmtree(filepath)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (filepath, e))
+
+    global currentWide
+    global currentSide
+    cwide = currentWide.getSaveName() if currentWide != None else 'None'
+    cside = currentSide.getSaveName() if currentSide != None else 'None'
+    file = open(path + '/app.save', 'w+')
+    file.write(interpolate('current_wide: {cwide}\n'))
+    file.write(interpolate('current_side: {cside}\n'))
+    file.close()
+
+    midi.save(path)
+
+def tick():    
+    tonearmA.update()
+    tonearmB.update()
 
 def wireCallback(indata, outdata, frames, timeinfo, status):
     global streamTimeStart
@@ -542,6 +570,8 @@ def main():
                         currentSide.redraw()
                 else:
                     console.print('channel is used')
+            elif events.check(event, 'SAVE'):
+                save(event.dict['name'])
 
 
 

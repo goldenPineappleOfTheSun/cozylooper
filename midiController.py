@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+from utils import interpolate
 import pygame.midi
 
 class MidiController:
@@ -7,6 +8,7 @@ class MidiController:
     def __init__(self, sampler):
         self.channels = np.full((16), None)
         self.inputs = np.full((16), None)
+        self.wires = np.full((16), None)
         self.sampler = sampler
 
     def appendChannel(self, n, midiInstrument):
@@ -19,8 +21,24 @@ class MidiController:
     def isChannelUsed(self, n):
         return self.channels[n] != None
 
+    def save (self, path):    
+        for i in range(0, 16):
+            channel = self.channels[i]
+            if channel == None:
+                continue
+            device = str(pygame.midi.get_device_info(self.wires[i]))
+
+            file = open(interpolate('{path}/channel_{i}.save'), 'w+')
+            file.write(interpolate('channel: {i}\n'))
+            file.write(interpolate('device: {device}\n'));
+            file.close()
+
+            self.channels[i].save(interpolate('{path}/channel_{i}.save'))
+
+
     def wireChannel(self, device, instr):
         self.inputs[device] = pygame.midi.Input(instr)
+        self.wires[device] = instr
 
     def update(self):
         for i in range(0, 15):

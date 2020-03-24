@@ -2,8 +2,9 @@ import numpy as np
 import drawing as draw
 import math
 from utils import interpolate
+from areaSide import AreaSide
 
-class MidiPads():
+class MidiPads(AreaSide):
 
     def __init__(self, n, sampler):
         self.n = n
@@ -22,6 +23,9 @@ class MidiPads():
         self.selectedType = 'key'
         self.selected = 0
         self.inputpointer = 0
+
+    def getSaveName(self):
+        return 'midiPads ' + str(self.n)
 
     def press(self, note, strengh):
         n = note - 48
@@ -82,6 +86,15 @@ class MidiPads():
 
         if type == 'key':
             self.redrawKey(n, True)
+
+    def save(self, path):
+        file = open(path, 'a')
+        file.write(interpolate('type: pads\n'))
+        for i, s in enumerate(self.samples):
+            if s == None:
+                continue
+            file.write(interpolate('map {i}: {s}\n'))
+        file.close()
 
     def setBankForSelectedKey(self, bank):
         sel = self.selected + self.page * 16

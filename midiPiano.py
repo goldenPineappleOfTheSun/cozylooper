@@ -2,8 +2,9 @@ import numpy as np
 import drawing as draw
 import math
 from utils import interpolate
+from areaWide import AreaWide
 
-class MidiPiano():
+class MidiPiano(AreaWide):
 
     def __init__(self, n, sampler):
         self.n = n
@@ -19,6 +20,9 @@ class MidiPiano():
         self.selectedType = 'note'
         self.selected = 12
         self.inputpointer = 0
+
+    def getSaveName(self):
+        return 'midiPiano ' + str(self.n)
 
     def getKeyRect(self, n):
         positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
@@ -107,6 +111,15 @@ class MidiPiano():
         if text != None:
             draw.text(text[0], textrect[0] + 0.5, textrect[1] + 0.7, textcolor + ' console center')
             draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.3, textcolor + ' tiny center')
+
+    def save(self, path):
+        file = open(path, 'a')
+        file.write(interpolate('type: piano\n'))
+        for i, s in enumerate(self.samples):
+            if s == None:
+                continue
+            file.write(interpolate('map {i}: {s}\n'))
+        file.close()
 
     def select(self, type, n):
         if self.selectedType != type or self.selected != n:
