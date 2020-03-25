@@ -1,6 +1,7 @@
 import numpy as np
 from utils import interpolate
 from soundingSample import SoundingSample
+import random
 
 class SamplesController:
     def __init__(self, soundbank):
@@ -17,7 +18,8 @@ class SamplesController:
         code = interpolate('{channel}-{key}')
         if (not name in self.finals) or len(self.finals[name]) < 100:
             return
-        self.currents.append(SoundingSample(self, code, name, options))
+        note = random.choice(['c1', 'e#3'])
+        self.currents.append(SoundingSample(self, code, name, {'pitch': note}))
 
     def read(self, frames):
         result = np.zeros(frames)
