@@ -10,6 +10,8 @@ class SoundingSample:
         self.options = options
         self._setDefaultOptions()
         self.over = False
+        self.timespan = 0
+        self.volume = 1
         self.pointer = 0
 
     def read(self, framescount):
@@ -25,13 +27,22 @@ class SoundingSample:
         length = len(sound)
         if length < frames:
             sound = np.pad(sound, (0, framescount - length), 'constant')
+        self.timespan += 1
         self.pointer += frames
-        if self.pointer > samplesize:
+        if self.pointer >= samplesize:
             if self.options['loop'] == 'once':
                 self.over = True
             else:
                 self.pointer = self.pointer % samplesize
         return sound
+
+    def wheelVolume(self, relative):
+        self.volume += relative
+        if self.volume > 1:
+            self.volume = 1
+        if self.volume <= 0:
+            self.volume = 0
+            self.over = True
 
     def _setDefaultOptions(self):
         if not 'loop' in self.options:
