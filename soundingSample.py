@@ -52,12 +52,12 @@ class SoundingSample:
                 self.pointer = self.pointer % samplesize
 
         if self.fadeout > 0:
-            self.volume -= self.fadeout * 0.1
+            self.volume -= self.fadeout * 0.01
             if self.volume <= 0.01:
                 self.volume = 0
                 self.over = True
 
-        return sound
+        return sound * self.volume
 
     def wheelVolume(self, relative):
         self.volume += relative

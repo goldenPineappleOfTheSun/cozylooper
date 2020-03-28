@@ -101,7 +101,7 @@ class SamplesController:
         code =self.generateSoundCode(channel, key, samplename, info, options)
 
         for sound in filter(lambda x: x.code == code, self.currents):
-            sound.fadeout = 0.1
+            sound.fadeout = 0.5
 
     def setSuspendMode(self, sample, mode):
         if mode in  self._possibleSuspendModes:
