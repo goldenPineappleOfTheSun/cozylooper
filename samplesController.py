@@ -84,9 +84,11 @@ class SamplesController:
                 if wave.any():
                     result += wave
         if currentscount > 4:
+            index = 0
             for cur in self.currents:
                 if sound.over == False:
-                    cur.wheelVolume((currentscount - 4) * math.pow(cur.timespan, 1.5) * -0.0001)
+                    cur.wheelVolume((currentscount - 4) * math.pow(cur.timespan, 1.2) * index * -1e-8)
+                    index += 1
         return result
 
     def save(self, path):    
