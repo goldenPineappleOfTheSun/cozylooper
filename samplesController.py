@@ -33,11 +33,7 @@ class SamplesController:
                 index += 1
         return result
 
-    def generateSoundCode(self, channel, key, samplename, info = {}, options = {}):
-        """susMode = info['susMode']
-        if susMode == 'sus solo' or susMode == 'sus portm' or susMode == 'stop samp':
-            samplename = 'None'
-        print(interpolate('chn={channel}&key={key}&smp={samplename}'))"""
+    def generateSoundCode(self, channel, key, samplename, options = {}):
         return interpolate('chn={channel}&key={key}&smp={samplename}')
 
     """ generates samples of note c in all octaves and returns it as dict
@@ -68,8 +64,10 @@ class SamplesController:
         if susMode == 'sus chord' or susMode == 'sus portm' or susMode == 'sus solo':
             options['loop'] = 'loop'
 
-        info = {'susMode': susMode}
-        code = self.generateSoundCode(channel, key, samplename, info, options)
+        code = self.generateSoundCode(channel, key, samplename, options)
+
+        if susMode == "sus solo" or susMode == 'stop samp':
+            self.stopSome(lambda x: x.name == samplename)
 
         self.currents.append(SoundingSample(self, code, samplename, options))
 
@@ -96,12 +94,18 @@ class SamplesController:
         if (not samplename in self.finals) or len(self.finals[samplename]['1']) < 100:
             return
 
-        susMode = self.suspendModes[samplename]
-        info = {'susMode': susMode}
-        code =self.generateSoundCode(channel, key, samplename, info, options)
+        code =self.generateSoundCode(channel, key, samplename, options)
 
         for sound in filter(lambda x: x.code == code, self.currents):
             sound.fadeout = 0.5
+        
+    def stopAll(self):
+        self.currents = []
+
+    def stopSome(self, func):
+        for cur in self.currents:
+            if func(cur) == True:
+                cur.fadeout = 0.5
 
     def setSuspendMode(self, sample, mode):
         if mode in  self._possibleSuspendModes:
@@ -112,5 +116,3 @@ class SamplesController:
 
     def updateSample(self, name):
         self.finals[name] = self.generateSamplesForOctaves(self.soundbank.read(name))
-    def stopAll(self):
-        self.currents = []
