@@ -68,11 +68,14 @@ class SamplesController:
 
         if susMode == 'sus solo' or susMode == 'stop samp':
             self.stopSome(lambda x: x.name == samplename)
-
-        if susMode == 'pedal':
+        elif susMode == 'pedal':
             self.stop(samplename, options, channel, key)
+        elif susMode == 'stop oct':
+            self.stopSome(lambda x: x.atStartInfo['octave'] == octaves[math.floor(key / 12)])
 
-        self.currents.append(SoundingSample(self, code, samplename, options))
+        atStartInfo = {'note': notes[key % 12], 'octave': octaves[math.floor(key / 12)]}
+
+        self.currents.append(SoundingSample(self, code, samplename, options, atStartInfo = atStartInfo))
 
     def read(self, frames):
         result = np.zeros(frames)

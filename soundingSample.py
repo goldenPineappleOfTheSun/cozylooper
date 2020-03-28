@@ -3,12 +3,14 @@ import processor
 import math
 
 class SoundingSample:
-    def __init__(self, controller, code, name, options):
+    def __init__(self, controller, code, name, options, atStartInfo = {}):
         self.code = code
         self.controller = controller
         self.name = name
         self.options = options.copy()
+        self.atStartInfo = atStartInfo.copy()
         self._setDefaultOptions()
+        self._setDefaultStartInfo()
         self.over = False
         self.fadeout = 0
         self.timespan = 0
@@ -79,3 +81,9 @@ class SoundingSample:
             self.options['glide'] = False
         if not 'glidespeed' in self.options:
             self.options['glidespeed'] = 0.9
+
+    def _setDefaultStartInfo(self):
+        if not 'note' in self.atStartInfo:
+            self.atStartInfo['note'] = 'c'
+        if not 'octave' in self.atStartInfo:
+            self.atStartInfo['octave'] = '1'
