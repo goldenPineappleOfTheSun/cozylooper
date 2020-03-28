@@ -7,7 +7,7 @@ class SoundingSample:
         self.code = code
         self.controller = controller
         self.name = name
-        self.options = options
+        self.options = options.copy()
         self._setDefaultOptions()
         self.over = False
         self.fadeout = 0
@@ -15,6 +15,7 @@ class SoundingSample:
         self.volume = 1
         self.pointer = 0
         self._glidepointer = None
+        self._lastnote = 'c0'
 
     def read(self, framescount):
         global pitches
