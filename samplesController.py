@@ -14,7 +14,7 @@ class SamplesController:
         """ словарь словарей 1 ключи - названия сэмплов, 2 ключи - названия октав (для быстрого ресэмплинга) """
         self.finals = dict.fromkeys(soundbank.names, {})
         self.suspendModes = dict.fromkeys(soundbank.names, 'sus chord')
-        self._possibleSuspendModes = ['stop oct', 'stop samp', 'stop note', 'chaos', 'sus solo', 'sus portm', 'sus chord']
+        self._possibleSuspendModes = ['stop oct', 'pedal', 'sus solo', 'sus portm', 'sus chord']
         self.currents = []
 
     """ очистить все over == True. надо иногда вызывать """
@@ -66,8 +66,11 @@ class SamplesController:
 
         code = self.generateSoundCode(channel, key, samplename, options)
 
-        if susMode == "sus solo" or susMode == 'stop samp':
+        if susMode == 'sus solo' or susMode == 'stop samp':
             self.stopSome(lambda x: x.name == samplename)
+
+        if susMode == 'pedal':
+            self.stop(samplename, options, channel, key)
 
         self.currents.append(SoundingSample(self, code, samplename, options))
 
@@ -92,6 +95,9 @@ class SamplesController:
 
     def stop(self, samplename, options = {}, channel = 99, key = 36):
         if (not samplename in self.finals) or len(self.finals[samplename]['1']) < 100:
+            return
+
+        if self.suspendModes[samplename] == 'pedal':
             return
 
         code =self.generateSoundCode(channel, key, samplename, options)
