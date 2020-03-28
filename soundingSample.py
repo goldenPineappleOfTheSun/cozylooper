@@ -21,7 +21,7 @@ class SoundingSample:
         global pitches
 
         note = self.options['pitch']
-        pitch = processor.getPitchCoefficient(note)
+        pitch = processor.getPitchCoefficient(note[0:2] + '1')
 
         if self.options['glide'] == True:
             if self._glidepointer == None:
@@ -31,10 +31,13 @@ class SoundingSample:
                 pitch = self._glidepointer
 
         frames = math.floor(framescount * pitch)
-        sound = self.controller.finals[self.name][self.pointer:self.pointer + frames]
-        samplesize = self.controller.sizes[self.name]
+        
+        sound = self.controller.getSample(self.name, self.options['pitch'])
+        samplesize = len(sound)
+        sound = sound[self.pointer:self.pointer + frames]
+        
         if pitch != 1:
-            sound = processor.fastInterpolate(sound, pitch)
+            sound = processor.fastResample(sound, pitch)
 
         length = len(sound)
         if length < framescount:

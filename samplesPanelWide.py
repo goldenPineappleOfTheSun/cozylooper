@@ -42,9 +42,8 @@ class SamplesPanelWide(AreaWide):
 
     def update(self):     
         self.samples = []   
-        for key in self.sampler.finals:
-            if len(self.sampler.finals[key]) > 0:
-                self.samples.append((key, len(self.samples), self.sampler.finals[key]))
+        for name in self.sampler.getSamplesNames():
+            self.samples.append(name, len(self.samples))
 
     def wheelSuspendMode(self, val):
         modes = ['stop oct', 'stop samp', 'stop note', 'chaos', 'sus solo', 'sus portm', 'sus chord']
