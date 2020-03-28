@@ -55,6 +55,9 @@ class MidiPiano(AreaWide):
     def press(self, note, strengh):
         self.sampler.play(self.samples[note], channel = self.n, key = note - 12)
 
+    def release(self, note, strengh):
+        self.sampler.stop(self.samples[note], channel = self.n, key = note - 12)
+
     """ for wide """
     def redrawTitle(self):
         draw.clearRect(self.left, self.top, self.WIDTH, 1);

@@ -26,6 +26,7 @@ from listOfDevicesWide import ListOfDevicesWide
 import processor
 from soundbank import Soundbank
 from samplesController import SamplesController
+from samplesPanelWide import SamplesPanelWide
 from midiController import MidiController 
 from midiPiano import MidiPiano
 from midiPads import MidiPads
@@ -67,6 +68,7 @@ clock = pygame.time.Clock()
 console = Console(1, 27, 32)
 soundbank = Soundbank()
 sampler = SamplesController(soundbank)
+samplesControlPanel = SamplesPanelWide(sampler)
 midi = MidiController(sampler)
 
 """Wides"""
@@ -297,6 +299,14 @@ def wideLeft(event):
     if "leftPressed" in dir(currentWide):
         currentWide.leftPressed()
 
+def wideUp(event):
+    if "upPressed" in dir(currentWide):
+        currentWide.upPressed()
+
+def wideDown(event):
+    if "downPressed" in dir(currentWide):
+        currentWide.downPressed()
+
 def wideDigit(event):
     # some strange arrows bug !!!
     if (event.name == 'up'
@@ -478,6 +488,8 @@ hotkeys.simple('r', sideR, "side")
 
 hotkeys.simple('enter', wideEnter, "wide")
 hotkeys.simple('right', wideRight, "wide")
+hotkeys.simple('up', wideUp, "wide")
+hotkeys.simple('down', wideDown, "wide")
 hotkeys.simple('left', wideLeft, "wide")
 hotkeys.simple('1', wideDigit, "wide")
 hotkeys.simple('2', wideDigit, "wide")
@@ -624,6 +636,10 @@ def main():
                     print('MANY REPEATS for LOAD_INSTRUMENT')
                 else:
                     midi.channels[event.dict['n']].load(event.dict['filename'], console)
+            elif events.check(event, 'SHOW_SAMPLER'):
+                currentWide = samplesControlPanel
+                currentWide.redrawTitle()
+                currentWide.redraw()
 
 
 if __name__ == "__main__":

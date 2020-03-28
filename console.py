@@ -23,7 +23,8 @@ class Console:
             'piano': self.c_piano,
             'pads': self.c_pads,
             'save': self.c_save,
-            'load': self.c_load
+            'load': self.c_load,
+            'sampler': self.c_sampler
         }
         self.history = []
         self._historyPointer = 0
@@ -207,6 +208,11 @@ class Console:
         name = arguments[0]
         events.emit('LOAD', {'name': name})
         return name + ' loaded'
+
+    def c_sampler(self, arguments):
+        _args = consoleParser(arguments)
+        events.emit('SHOW_SAMPLER', {})
+        return 'sampler displayed'
 
 
 def consoleParser(arguments):

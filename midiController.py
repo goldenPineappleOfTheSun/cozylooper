@@ -82,6 +82,9 @@ class MidiController:
                 if command == 8:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
+                    strength = msg[0][2]
+                    instrument = self.channels[ch]
+                    instrument.release(note, 0)
                 if command == 9:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
