@@ -181,8 +181,8 @@ def clearCanvas():
     pygame.draw.rect(canvas, _tupleFromHexColor(clearColor), (0, 0, width * cw, height * ch))
     appendUpdateRect(0, 0, width, height)
 
-def clearRect(x, y, w, h):
-    rectangle(x, y, w, h, '@clear')
+def clearRect(x, y, w, h, clearColor = '@clear'):
+    rectangle(x, y, w, h, clearColor)
     appendUpdateRect(x, y, w, h)
 
 def appendUpdateRect(x, y, w, h):

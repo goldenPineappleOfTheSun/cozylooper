@@ -72,12 +72,16 @@ class MidiPiano(AreaWide):
         draw.rectangle(self.left, self.top + self.HEIGHT, self.WIDTH, 1, '@light')
         draw.rectangle(self.left + self.WIDTH - 4, self.top + 1, 4, self.HEIGHT, '@light')
         draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
-        draw.rectangle(self.left + kl, self.top + 2, kl + 14, self.HEIGHT - 2, '@clear')
-        self.redrawKeys()
-        #self.select('note', 11)
+        draw.rectangle(self.left + kl, self.top + 2, 21, self.HEIGHT - 2, '@clear')
+        self.redrawKeys(needRedraw = False)
+        self.redrawOctaves(needRedraw = False)
 
-    def redrawKeys(self):
+    def redrawKeys(self, needRedraw = True):
         kl = self.KEYBOARDLEFT
+
+        if needRedraw == True:
+            draw.clearRect(self.left + kl, self.top + 2, 21, self.HEIGHT - 2);
+
         for i in range(1, 21):
             draw.line(self.left + kl + i, self.top + 4, self.left + kl + i, self.top + self.HEIGHT, '@neutral')
         for i in [3, 7, 10, 14, 17]:
@@ -95,6 +99,23 @@ class MidiPiano(AreaWide):
 
         for i in range(0, 24):
             self.redrawKey(i)
+
+    def redrawOctaves(self, needRedraw = True):
+        kl = self.KEYBOARDLEFT
+
+        if needRedraw == True:
+            draw.clearRect(self.left + kl + 6, self.top + 1.25, 9, 0.5, clearColor = '@light');
+
+        octave = self.camera / 12
+        for i in range(0, 9):
+            if octave <= i and octave + 3 > i:
+                if self.selectedType == 'octave':
+                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@set')
+                else:
+                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.25, '@set')
+                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.5, 0.8, 0.25, '@clear')
+            else:
+                draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@neutral')
 
     def redrawKey(self, n, isselected = False):
         if self.isWhiteKey(n):
@@ -169,14 +190,42 @@ class MidiPiano(AreaWide):
         self.sampler.play(self.samples[self.selected + self.camera], channel = 99, key = self.selected + self.camera)
 
     def rightPressed(self):
-        if self.selected > 34:
-            return
-        self.select('note', self.selected + 1)
+        if self.selectedType == 'note':
+            if self.selected > 34:
+                return
+            self.select('note', self.selected + 1)
+        elif self.selectedType == 'octave':
+            if self.camera >= 72:
+                return
+            else:
+                self.camera += 12
+                self.redrawOctaves()
+                self.redrawKeys(needRedraw = False)
 
     def leftPressed(self):
-        if self.selected < 1:
-            return
-        self.select('note', self.selected - 1)
+        if self.selectedType == 'note':
+            if self.selected < 1:
+                return
+            self.select('note', self.selected - 1)
+        elif self.selectedType == 'octave':
+            if self.camera < 1:
+                return
+            else:
+                self.camera -= 12
+                self.redrawOctaves()
+                self.redrawKeys(needRedraw = False)
+
+    def upPressed(self):
+        if self.selectedType == 'note':
+            self.selectedType = 'octave'
+            self.redrawOctaves()
+            self.redrawKey(self.selected)
+
+    def downPressed(self):
+        if self.selectedType == 'octave':
+            self.selectedType = 'note'
+            self.redrawOctaves()            
+            self.select('note', self.selected)
 
     def digitPressed(self, n):
         if self.selectedType == 'note':
