@@ -158,6 +158,16 @@ def line(x1, y1, x2, y2, style):
     drawStyle = _styleLine(style)
     pygame.draw.line(canvas, drawStyle.line, (fx, fy), (tx, ty), drawStyle.lineWidth)
 
+_textCache={}
+def renderText(font, txt, style):
+    code = str(font) + ': ' + str(style)
+    if not code in _textCache:
+        _textCache[code] = {}
+    cache = _textCache[code]
+    if not txt in cache:
+        cache[txt] = font.render(txt, 1 , style)
+    return _textCache[code][txt]
+
 def text(txt, left, top, style):
     x = coords.x(left)
     y = coords.y(top)
@@ -173,7 +183,8 @@ def text(txt, left, top, style):
 
     drawStyle = _styleText(style)
 
-    todraw = fontsCollection[drawStyle.font].render(txt, 1, drawStyle.fore)
+    #todraw = fontsCollection[drawStyle.font].render(txt, 1, drawStyle.fore)
+    todraw = renderText(fontsCollection[drawStyle.font], txt, drawStyle.fore)
     place = aligns[drawStyle.align](todraw, x, y)
     canvas.blit(todraw, place)
 

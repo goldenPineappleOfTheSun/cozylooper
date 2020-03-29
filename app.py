@@ -85,6 +85,7 @@ def start():
     wire.start(callback = wireCallback) 
     draw.setNewFont('open-sans', 'open-sans 12')
     draw.setDefaultFont('open-sans')
+    metronome.redraw()
     console.redraw()
 
 def update():
@@ -525,6 +526,7 @@ def main():
     pygame.display.set_caption("Looper")
      
     screen = pygame.display.set_mode((draw.cw * draw.width, draw.height * draw.ch))
+    screen.set_alpha(None)
     draw.setCanvas(screen)
      
     running = True

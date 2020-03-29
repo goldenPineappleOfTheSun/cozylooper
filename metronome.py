@@ -171,11 +171,12 @@ class Metronome:
         if self._flip == False and beat % 1 <= 0.5:
             self._flip = True
             self.onBeat()
-            self.redraw() 
+            self.redrawIndicator() 
 
         if self._flip == True and beat % 1 > 0.5:
             self._flip = False
             self.onHalfBeat()
+            self.redrawIndicator() 
 
         if (bias == 0 and self._readyToSound) or (bias < 0 and (beat % 1) > (1 + self.bias) and self._readyToSound) or (bias > 0 and (beat % 1) > (self.bias) and self._readyToSound):
             metronomeEnabled = self.state == MetronomeState.work or self.state == MetronomeState.blink     
