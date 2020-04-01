@@ -11,7 +11,6 @@ class MidiPads(AreaSide):
         self.n = n
         self.samples = np.full((4 * 16), None)
         self.colors = np.full((4 * 16), None)
-        self.COLORS = ['@neutral', '#92504f', '#f97b6a', '#90a8d0', '#035084', '#96dbde', '#9896a3', '#de4831', '#b28e6a', '#76c453']
         self.sampler = sampler
         self.volume = 0.5
         self.left = 16
@@ -34,7 +33,7 @@ class MidiPads(AreaSide):
     def load(self, filename, console):
         dict = utils.readSaveFile(filename)
         for i in range(0, len(self.samples)):
-            x = 'map ' + str(i)
+            #x = 'map ' + str(i)
             if x in dict:
                 print(x)
                 self.samples[i] = dict[x]

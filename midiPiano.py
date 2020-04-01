@@ -21,6 +21,7 @@ class MidiPiano(AreaWide):
         self.selectedType = 'note'
         self.selected = 12
         self.inputpointer = 0
+        self.samplesColors = {}
 
     def getKeyRect(self, n):
         positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
@@ -48,8 +49,9 @@ class MidiPiano(AreaWide):
         for i in range(0, len(self.samples)):
             x = 'map ' + str(i)
             if x in dict:
-                print(x)
+                #print(x)
                 self.samples[i] = dict[x]
+        self.updateSamplesColors()
         self.redraw()
 
     def press(self, note, strengh):
@@ -75,6 +77,7 @@ class MidiPiano(AreaWide):
         draw.rectangle(self.left + kl, self.top + 2, 21, self.HEIGHT - 2, '@clear')
         self.redrawKeys(needRedraw = False)
         self.redrawOctaves(needRedraw = False)
+        self.redrawInfo(needRedraw = False)
 
     def redrawKeys(self, needRedraw = True):
         kl = self.KEYBOARDLEFT
@@ -100,6 +103,14 @@ class MidiPiano(AreaWide):
         for i in range(0, 24):
             self.redrawKey(i)
 
+    def redrawInfo(self, needRedraw = True):
+        kl = self.KEYBOARDLEFT
+        index = 0
+        for key in self.samplesColors:
+            draw.rectangle(kl + 12 * 3 + 0.5, 2 + index + 0.25, 1, 0.5, self.samplesColors[key])
+            draw.text(key, kl + 12 * 3 + 1.75, 2 + index + 0.25, '@neutral default midleft') 
+            index += 1
+
     def redrawOctaves(self, needRedraw = True):
         kl = self.KEYBOARDLEFT
 
@@ -124,33 +135,50 @@ class MidiPiano(AreaWide):
             self.redrawBlackKey(n, isselected)
 
     def redrawWhiteKey(self, n, isselected = False):
-        text = self.samples[n + self.camera]
+        key = n + self.camera
+        text = self.samples[key]
         kl = self.KEYBOARDLEFT
         style = '@clear' if isselected == False else '@set'
         rect = self.getKeyRect(n)
         draw.clearRect(rect[0], rect[1], rect[2], rect[3])
         draw.rectangle(rect[0], rect[1], rect[2], rect[3], style)
 
-        textrect = self.getKeyRectAsNums(n)
-        textcolor = '@neutral' if isselected == False else '@dark'
+        color = '@neutral'
+        sample = self.samples[key]
+        if sample in self.samplesColors:
+            color = self.samplesColors[sample]
 
-        if text != None:
-            draw.text(text[0], textrect[0] + 0.5, textrect[1] + 1, textcolor + ' console center')
-            draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.6, textcolor + ' tiny center')
+        rect2 = self.getKeyRectAsNums(n)
+        draw.rectangle(rect2[0] + 0.25, rect2[1] + 1.5, 0.5, 0.25, color)
+
+        #textrect = self.getKeyRectAsNums(n)
+        #textcolor = '@neutral' if isselected == False else '@dark'
+        #if text != None:
+        #    draw.text(text[0], textrect[0] + 0.5, textrect[1] + 1, textcolor + ' console center')
+        #    draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.6, textcolor + ' tiny center')
 
     def redrawBlackKey(self, n, isselected = False):
-        text = self.samples[n + self.camera]
+        key = n + self.camera
+        text = self.samples[key]
         kl = self.KEYBOARDLEFT
         style = '@neutral' if isselected == False else '@set'
         rect = self.getKeyRect(n)
         draw.clearRect(rect[0], rect[1], rect[2], rect[3])
         draw.rectangle(rect[0], rect[1], rect[2], rect[3], style)
 
-        textrect = self.getKeyRectAsNums(n)
-        textcolor = '@clear' if isselected == False else '@dark'
-        if text != None:
-            draw.text(text[0], textrect[0] + 0.5, textrect[1] + 0.7, textcolor + ' console center')
-            draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.3, textcolor + ' tiny center')
+        color = '@light'
+        sample = self.samples[key]
+        if sample in self.samplesColors:
+            color = self.samplesColors[sample]
+
+        rect2 = self.getKeyRectAsNums(n)
+        draw.rectangle(rect2[0] + 0.25, rect2[1] + 1.5, 0.5, 0.25, color)
+
+        #textrect = self.getKeyRectAsNums(n)
+        #textcolor = '@clear' if isselected == False else '@dark'
+        #if text != None:
+        #    draw.text(text[0], textrect[0] + 0.5, textrect[1] + 0.7, textcolor + ' console center')
+        #    draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.3, textcolor + ' tiny center')
 
     def save(self, path):
         file = open(path, 'a')
@@ -181,8 +209,25 @@ class MidiPiano(AreaWide):
         else:
             text = bank + text[1:3]
         self.samples[sel] = text
+        self.updateSamplesColors()
         self.select('note', self.selected)
         self.inputpointer = 0
+
+    def updateSamplesColors(self):
+        counts = dict.fromkeys(self.sampler.finals, (-1, 0))
+
+        for index, name in enumerate(self.samples):
+            if name != None:
+                counts[name] = (
+                    index if counts[name][0] == -1 else counts[name][0], 
+                    counts[name][1] + 1)
+        filtered = sorted(counts.items(), key=lambda item: item[1][0] * 1e3 + item[1][1], reverse = True)
+        self.samplesColors = {
+            filtered[0][0]: draw.paintColors[2],
+            filtered[1][0]: draw.paintColors[4],
+            filtered[2][0]: draw.paintColors[6],
+            filtered[3][0]: draw.paintColors[7],
+            filtered[4][0]: draw.paintColors[8]}
 
     # wide events
 
@@ -244,17 +289,24 @@ class MidiPiano(AreaWide):
                 self.inputpointer = 0
                 self.select('note', self.selected)
 
+            self.updateSamplesColors()
+
     def aPressed(self):
-        self.setBankForSelectedKey('a')
+        if self.selectedType == 'note':
+            self.setBankForSelectedKey('a')
 
     def bPressed(self):
-        self.setBankForSelectedKey('b')
+        if self.selectedType == 'note':
+            self.setBankForSelectedKey('b')
 
     def cPressed(self):
-        self.setBankForSelectedKey('c')
+        if self.selectedType == 'note':
+            self.setBankForSelectedKey('c')
 
     def dPressed(self):
-        self.setBankForSelectedKey('d')
+        if self.selectedType == 'note':
+            self.setBankForSelectedKey('d')
 
     def rPressed(self):
-        self.setBankForSelectedKey('r')
+        if self.selectedType == 'note':
+            self.setBankForSelectedKey('r')
