@@ -4,6 +4,7 @@ import math
 import utils
 from utils import interpolate
 from areaWide import AreaWide
+import customevents as events
 
 class MidiPiano(AreaWide):
 
@@ -55,8 +56,12 @@ class MidiPiano(AreaWide):
             if x in dict:
                 #print(x)
                 self.samples[i] = dict[x]
+
+        self.deselectOctave(self.camera / 12)
         self.updateSamplesColors()
-        self.redraw()
+        self.updateKeysDrawingMap()
+        events.emit('REDRAW_PIANO', {'step': 1})
+        #self.redraw()
 
     def press(self, note, strengh):
         self.sampler.play(self.samples[note], channel = self.n, key = note - 12)
@@ -72,6 +77,7 @@ class MidiPiano(AreaWide):
 
     """ for wide """
     def initDraw(self):
+        self._initDrawingMap()
         kl = self.KEYBOARDLEFT
         draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT, clearColor = '@neutral');
         draw.rectangle(self.left, self.top + 1, self.WIDTH, 1, '@light')
@@ -97,22 +103,37 @@ class MidiPiano(AreaWide):
 
     """ draw in wide """
     def redraw(self):        
-        kl = self.KEYBOARDLEFT
-        """draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT);
-        draw.rectangle(self.left, self.top + 1, self.WIDTH, 1, '@light')
-        draw.rectangle(self.left, self.top + self.HEIGHT, self.WIDTH, 1, '@light')
-        draw.rectangle(self.left + self.WIDTH - 4, self.top + 1, 4, self.HEIGHT, '@light')
-        draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
-        draw.rectangle(self.left + kl, self.top + 2, 21, self.HEIGHT - 2, '@clear')"""
+        events.emit('REDRAW_PIANO', {'step': 1})    
+        """kl = self.KEYBOARDLEFT
         self.redrawKeys()#needRedraw = False)
         self.redrawOctaves()#needRedraw = False)
         self.redrawInfo()#needRedraw = False)
+        self._lastDrawingMap = self.drawingMap.copy()"""
+
+    def redrawStep1(self):
+        self.redrawOctaves()
+        events.emit('REDRAW_PIANO', {'step': 2})
+
+    def redrawStep2(self):
+        self.redrawKeys(fr = 0, to = 12)
+        events.emit('REDRAW_PIANO', {'step': 3})
+
+    def redrawStep3(self):
+        self.redrawKeys(fr = 12, to = 24)
+        events.emit('REDRAW_PIANO', {'step': 4})
+
+    def redrawStep4(self):
+        self.redrawKeys(fr = 24, to = 36)
+        self.redrawInfo()
+        events.emit('REDRAW_PIANO', {'step': 5})
+
+    def redrawStep5(self):
         self._lastDrawingMap = self.drawingMap.copy()
 
-    def redrawKeys(self):
+    def redrawKeys(self, fr = 0, to = 36):
         kl = self.KEYBOARDLEFT
 
-        for i in range(0, 12 * 3):
+        for i in range(fr, to):
             key = 'key-' + str(i)
             if self.drawingMap[key] != self._lastDrawingMap[key]:
                 args = self.drawingMap[key].split(' ')
@@ -152,7 +173,7 @@ class MidiPiano(AreaWide):
         for i in range(0, 9):
             key = 'octave-' + str(i)
             if self.drawingMap[key] != self._lastDrawingMap[key]:
-                draw.clearRect(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5)
+                draw.clearRect(self.left + kl + 6 + i, self.top + 1, 1, 1, '@light')
                 if self.drawingMap[key] == '0':
                     draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@neutral')
                 elif self.drawingMap[key] == '1': 

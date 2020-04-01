@@ -646,6 +646,19 @@ def main():
                 currentWide = samplesControlPanel
                 currentWide.redrawTitle()
                 currentWide.redraw()
+            elif events.check(event, 'REDRAW_PIANO'):
+                if currentWide.getType() == 'piano':
+                    step = event.dict['step']
+                    if step == 1:
+                        currentWide.redrawStep1()
+                    if step == 2:
+                        currentWide.redrawStep2()
+                    if step == 3:
+                        currentWide.redrawStep3()
+                    if step == 4:
+                        currentWide.redrawStep4()
+                    if step == 5:
+                        currentWide.redrawStep5()
 
 
 if __name__ == "__main__":
