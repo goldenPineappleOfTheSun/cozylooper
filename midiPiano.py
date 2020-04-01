@@ -28,12 +28,6 @@ class MidiPiano(AreaWide):
         self._lastDrawingMap = {}
         self._initDrawingMap()
 
-    """def getKeyRect(self, n):
-        positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
-        x = str(self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]) + 'cw + 1p'
-        w = '1cw - ' + str(1 if self.isWhiteKey(n) else 2) + 'p'
-        return (x, self.top + (4 if self.isWhiteKey(n) else 2), w, 2)"""
-
     def getKeyRect(self, n):
         positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
         x = self.left + self.KEYBOARDLEFT + math.floor(n / 12) * 7 + positions[n % 12]
@@ -54,14 +48,9 @@ class MidiPiano(AreaWide):
         for i in range(0, len(self.samples)):
             x = 'map ' + str(i)
             if x in dict:
-                #print(x)
                 self.samples[i] = dict[x]
-
-        self.deselectOctave(self.camera / 12)
-        self.updateSamplesColors()
-        self.updateKeysDrawingMap()
+                
         events.emit('REDRAW_PIANO', {'step': 1})
-        #self.redraw()
 
     def press(self, note, strengh):
         self.sampler.play(self.samples[note], channel = self.n, key = note - 12)
@@ -101,14 +90,21 @@ class MidiPiano(AreaWide):
         for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
             draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
 
+        self._initDrawingMap()
+        self.deselectOctave(self.camera / 12)
+        self.updateSamplesColors()
+        self.updateKeysDrawingMap()
+
     """ draw in wide """
     def redraw(self):        
         events.emit('REDRAW_PIANO', {'step': 1})    
-        """kl = self.KEYBOARDLEFT
-        self.redrawKeys()#needRedraw = False)
-        self.redrawOctaves()#needRedraw = False)
-        self.redrawInfo()#needRedraw = False)
-        self._lastDrawingMap = self.drawingMap.copy()"""
+
+    def _redraw(self):        
+        self.redrawStep1() 
+        self.redrawStep2() 
+        self.redrawStep3() 
+        self.redrawStep4() 
+        self.redrawStep5() 
 
     def redrawStep1(self):
         self.redrawOctaves()
@@ -142,30 +138,18 @@ class MidiPiano(AreaWide):
                 color = args[2]
                 self.redrawKey(i, selected, samplename, color)
 
-        #if needRedraw == True:
-        #    draw.clearRect(self.left + kl, self.top + 2, 21, self.HEIGHT - 2);
-
-        """
-
-        for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
-            draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
-
-        for i in range(0, 24):
-            self.redrawKey(i)"""
-
     def redrawInfo(self):
         kl = self.KEYBOARDLEFT
         for i in range(0, 5):
             key = 'colortable-' + str(i)
             if self.drawingMap[key] != self._lastDrawingMap[key]:
                 args = self.drawingMap[key].split(' ')
-                draw.clearRect(self.left + kl + 7 * 3 + 0.5, self.top + 1.5 + i, 3, 1, '@light')
-                draw.rectangle(self.left + kl + 7 * 3 + 0.5, self.top + 1.5 + i + 0.25, 0.5, 0.5, args[0])
-        """index = 0
-        for key in self.samplesColors:
-            draw.rectangle(kl + 12 * 3 + 0.5, 2 + index + 0.25, 1, 0.5, self.samplesColors[key])
-            draw.text(key, kl + 12 * 3 + 1.75, 2 + index + 0.25, '@neutral default midleft') 
-            index += 1"""
+                x = self.left + kl + 7 * 3
+                y = self.top + 1.5 + i
+                draw.clearRect(x + 0.5, y, 3, 1, '@light')
+                if args[1][0:4] != 'None':
+                    draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, args[0])
+                    draw.text(args[1], x + 1.25, y + 0.45, '@dark tiny midleft')
 
     def redrawOctaves(self):
         kl = self.KEYBOARDLEFT
@@ -181,20 +165,6 @@ class MidiPiano(AreaWide):
                     draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.5, 0.8, 0.25, '@clear')
                 elif self.drawingMap[key] == '2': 
                     draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@set')
-
-        #if needRedraw == True:
-        #    draw.clearRect(self.left + kl + 6, self.top + 1.25, 9, 0.5, clearColor = '@light');
-
-        """octave = self.camera / 12
-        for i in range(0, 9):
-            if octave <= i and octave + 3 > i:
-                if self.selectedType == 'octave':
-                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@set')
-                else:
-                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.25, '@set')
-                    draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.5, 0.8, 0.25, '@clear')
-            else:
-                draw.rectangle(self.left + kl + 6 + 0.1 + i, self.top + 1.25, 0.8, 0.5, '@neutral')"""
 
     def redrawKey(self, n, selected, samplename, color):
         if self.isWhiteKey(n):
@@ -218,25 +188,6 @@ class MidiPiano(AreaWide):
             draw.text(samplename[1:3], rect[0] + 0.5, rect[1] + 1.6, textcolor + ' tiny center')
         else:
             draw.rectangle(rect[0] + 0.25, rect[1] + 1.5, 0.5, 0.25, color)
-        
-        """
-        rect = self.getKeyRect(n)
-        draw.clearRect(rect[0], rect[1], rect[2], rect[3])
-        draw.rectangle(rect[0], rect[1], rect[2], rect[3], style)
-
-        color = '@neutral'
-        sample = self.samples[key]
-        if sample in self.samplesColors:
-            color = self.samplesColors[sample]
-
-        rect2 = self.getKeyRectAsNums(n)
-        draw.rectangle(rect2[0] + 0.25, rect2[1] + 1.5, 0.5, 0.25, color)"""
-
-        #textrect = self.getKeyRectAsNums(n)
-        #textcolor = '@neutral' if isselected == False else '@dark'
-        #if text != None:
-        #    draw.text(text[0], textrect[0] + 0.5, textrect[1] + 1, textcolor + ' console center')
-        #    draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.6, textcolor + ' tiny center')
 
     def redrawBlackKey(self, n, selected, samplename, color):
         kl = self.KEYBOARDLEFT
@@ -255,28 +206,6 @@ class MidiPiano(AreaWide):
         else:
             draw.rectangle(rect[0] + 0.25, rect[1] + 1.5, 0.5, 0.25, color)
 
-        """key = n + self.camera
-        text = self.samples[key]
-        kl = self.KEYBOARDLEFT
-        style = '@neutral' if isselected == False else '@set'
-        rect = self.getKeyRect(n)
-        draw.clearRect(rect[0], rect[1], rect[2], rect[3])
-        draw.rectangle(rect[0], rect[1], rect[2], rect[3], style)
-
-        color = '@light'
-        sample = self.samples[key]
-        if sample in self.samplesColors:
-            color = self.samplesColors[sample]
-
-        rect2 = self.getKeyRectAsNums(n)
-        draw.rectangle(rect2[0] + 0.25, rect2[1] + 1.5, 0.5, 0.25, color)
-
-        #textrect = self.getKeyRectAsNums(n)
-        #textcolor = '@clear' if isselected == False else '@dark'
-        #if text != None:
-        #    draw.text(text[0], textrect[0] + 0.5, textrect[1] + 0.7, textcolor + ' console center')
-        #    draw.text(text[1:3], textrect[0] + 0.5, textrect[1] + 1.3, textcolor + ' tiny center')"""
-
     def save(self, path):
         file = open(path, 'a')
         file.write(interpolate('type: piano\n'))
@@ -286,18 +215,6 @@ class MidiPiano(AreaWide):
             file.write(interpolate('map {i}: {s}\n'))
         file.close()
 
-    """def select(self, type, n):
-        if self.selectedType != type or self.selected != n:
-            if self.selectedType == 'note':
-                self.redrawKey(self.selected)
-            self.inputpointer = 0
-
-        self.selectedType = 'note'
-        self.selected = n
-
-        if type == 'note':
-            self.redrawKey(n, True)"""
-
     def selectNote(self, note):
         if self.selectedType == 'note' and self.selected == note:
             return
@@ -305,7 +222,10 @@ class MidiPiano(AreaWide):
         self.selectedType = 'note'
         self.selected = note
         self._dm_keyChanged(note, selected = True)
-        self.redraw()
+        self._redraw()
+
+    def deselectNote(self):
+        self._dm_keyChanged(self.selected, selected = False)
 
     def selectOctave(self, leftoctave):
         self.selectedType = 'octave'
@@ -332,10 +252,10 @@ class MidiPiano(AreaWide):
             text = bank + text[1:3]
         self.samples[sel] = text
         self.updateSamplesColors()
-        #self.selectNote(self.selected)
-        self._dm_keyChanged(self.selected, samplename = text)
+        #self._dm_keyChanged(self.selected, samplename = text)
+        self.updateKeysDrawingMap()
         self.inputpointer = 0
-        self.redraw()
+        self._redraw()
 
     def updateSamplesColors(self):
         counts = dict.fromkeys(self.sampler.finals, (-1, 0))
@@ -345,16 +265,22 @@ class MidiPiano(AreaWide):
                 counts[name] = (
                     index if counts[name][0] == -1 else counts[name][0], 
                     counts[name][1] + 1)
-        filtered = sorted(counts.items(), key=lambda item: item[1][0] * 1e3 + item[1][1], reverse = True)
+        sort = sorted(counts.items(), key=lambda item: item[1][0] * 1e3 + item[1][1], reverse = True)
 
         old = self.samplesColors.copy()
 
+        keys = [sort[x][0] if sort[x][1][1] != 0 else 'None ' + str(x) for x in range(0, 5)]
+
         self.samplesColors = {
-            filtered[0][0]: self.COLORS[0],
-            filtered[1][0]: self.COLORS[1],
-            filtered[2][0]: self.COLORS[2],
-            filtered[3][0]: self.COLORS[3],
-            filtered[4][0]: self.COLORS[4]}
+            keys[0]: self.COLORS[0],
+            keys[1]: self.COLORS[1],
+            keys[2]: self.COLORS[2],
+            keys[3]: self.COLORS[3],
+            keys[4]: self.COLORS[4]}
+
+        for i in range(0, 5):
+            key = keys[i]
+            self._dm_infoChanged(i, color = self.samplesColors[key], text = key)
 
         for i in range(0, 12 * 3):
             sample = self.samples[i + self.camera]
@@ -365,18 +291,16 @@ class MidiPiano(AreaWide):
                 color = self.samplesColors[sample] if sample in self.samplesColors else 'None'
                 self._dm_keyChanged(i, color = color)
 
-        self.redraw()
+        self._redraw()
 
     def updateKeysDrawingMap(self):
         for i in range(self.camera, self.camera + 12 * 3):
-            samplename = self.samples[i]
+            samplename = self.samples[i] if self.samples[i] != None else 'None'
             color = self.samplesColors[samplename] if samplename in self.samplesColors else 'None'
-            self._dm_keyChanged(i - self.camera, samplename = 'None', color = color)
+            self._dm_keyChanged(i - self.camera, samplename = samplename, color = color)
 
     def _dm_keyChanged(self, note, selected = None, samplename = None, color = None):
         key = 'key-' + str(note)
-        """if not key in self.drawingMap:
-            self.drawingMap[key] = '0 None None'"""
         args = self.drawingMap[key].split(' ')
         sel = args[0] if selected == None else '1' if selected == True else '0'
         sam = args[1] if samplename == None else samplename
@@ -387,6 +311,13 @@ class MidiPiano(AreaWide):
         for i in range(0, len(bitmask)):
             key = 'octave-' + str(i)
             self.drawingMap[key] = bitmask[i]
+
+    def _dm_infoChanged(self, n, color = None, text = None):
+        key = 'colortable-' + str(n)
+        args = self.drawingMap[key].split(' ')
+        col = args[0] if color == None else color
+        txt = args[1] if text == None else text
+        self.drawingMap[key] = interpolate('{col} {txt}')
 
     def _initDrawingMap(self):
         for i in range(0, 12*3):
@@ -419,8 +350,6 @@ class MidiPiano(AreaWide):
             else:
                 self.camera += 12
                 self.selectOctave(self.camera / 12)
-                #self.redrawOctaves()
-                #self.redrawKeys(needRedraw = False)
 
     def leftPressed(self):
         if self.selectedType == 'note':
@@ -433,20 +362,14 @@ class MidiPiano(AreaWide):
             else:
                 self.camera -= 12
                 self.selectOctave(self.camera / 12)
-                #self.redrawOctaves()
-                #self.redrawKeys(needRedraw = False)
 
     def upPressed(self):
         if self.selectedType == 'note':
-            #self.selectedType = 'octave'
-            #self.redrawOctaves()
-            #self.redrawKey(self.selected)
+            self.deselectNote()
             self.selectOctave(self.camera / 12)
 
     def downPressed(self):
-        if self.selectedType == 'octave':
-            #self.selectedType = 'note'
-            #self.redrawOctaves()            
+        if self.selectedType == 'octave':         
             self.deselectOctave(self.camera / 12)
             self.selectNote(self.selected)
 
@@ -466,6 +389,7 @@ class MidiPiano(AreaWide):
                 self.samples[sel] = text[0:2] + str(n)
                 self.inputpointer = 0
                 self.selectNote(self.selected)
+                self._dm_keyChanged(self.selected, samplename = self.samples[sel])
 
             self.updateSamplesColors()
 

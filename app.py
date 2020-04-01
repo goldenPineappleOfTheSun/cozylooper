@@ -124,7 +124,7 @@ def load(foldername):
             console.emulate(interpolate('piano {n}'))
 
     if side != None:
-        data = wide.split(' ')
+        data = side.split(' ')
         if data[0] == 'midiPads':
             n = data[1]
             console.emulate(interpolate('pads {n}'))
