@@ -27,7 +27,7 @@ colors = {
     '@darkrecord': '#c34f4f'
 }
 
-paintColors = ['@neutral', '#92504f', '#f97b6a', '#90a8d0', '#035084', '#96dbde', '#9896a3', '#de4831', '#b28e6a', '#76c453']
+paintColors = ['@neutral', '#92504f', '#f97b6a', '#90a8d0', '#758dc1', '#96dbde', '#a086b3', '#e37793', '#eede6c', '#76c453']
 
 _fonts = {
     'open-sans': 'fonts/OpenSans-Regular.ttf',

@@ -608,20 +608,24 @@ def main():
                     if widecreated:             
                         midi.appendChannel(n, currentWide)
                         currentWide.redrawTitle()
+                        currentWide.initDraw()
                         currentWide.redraw()
                     if sidecreated:             
                         midi.appendChannel(n, currentSide)
                         currentSide.redrawTitle()
+                        currentSide.initDraw()
                         currentSide.redraw()
                 else:
                     if midi.channels[n].getType() == type:
                         if type == 'piano':
                             currentWide = midi.channels[n]
                             currentWide.redrawTitle()
+                            currentWide.initDraw()
                             currentWide.redraw()
                         if type == 'pads':
                             currentSide = midi.channels[n]
                             currentSide.redrawTitle()
+                            currentSide.initDraw()
                             currentSide.redraw()
                         console.print('channel already exists. now displayed')
                     else:
