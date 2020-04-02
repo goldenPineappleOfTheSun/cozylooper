@@ -74,7 +74,7 @@ midi = MidiController(sampler)
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
 listOfDevicesWide = ListOfDevicesWide()
-currentWide = listOfCommandsWide
+currentWide = None
 currentSide = None
 
 def start():   
@@ -206,12 +206,14 @@ def sideTabbed(event):
     looperAreas.changeArea('wide')
 
 def wideTabbed(event):
-    looperAreas.changeArea('console', func = lambda: console.activate())
+    def lmbd():
+        console.activate()
+        if "deactivate" in dir(currentWide):
+            currentWide.deactivate()
+    looperAreas.changeArea('console', func = lmbd)
 
 def consoleTabbed(event):
-    looperAreas.changeArea(
-        'main',
-        func = lambda: console.deactivate())
+    looperAreas.changeArea('main', func = lambda: console.deactivate())
 
 def mainReTabbed():
     looperAreas.changeArea('console')

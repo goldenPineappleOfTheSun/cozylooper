@@ -58,47 +58,6 @@ class MidiPiano(AreaWide):
     def release(self, note, strengh):
         self.sampler.stop(self.samples[note], channel = self.n, key = note - 12)
 
-    """ for wide """
-    def redrawTitle(self):
-        draw.clearRect(self.left, self.top, self.WIDTH, 1);
-        draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
-        draw.text('Пианино ' + str(self.n), self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
-
-    """ for wide """
-    def initDraw(self):
-        self._initDrawingMap()
-        kl = self.KEYBOARDLEFT
-        draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT, clearColor = '@neutral');
-        draw.rectangle(self.left, self.top + 1, self.WIDTH, 1, '@light')
-        draw.rectangle(self.left, self.top + self.HEIGHT, self.WIDTH, 1, '@light')
-        draw.rectangle(self.left + self.WIDTH - 4, self.top + 1, 4, self.HEIGHT, '@light')
-        draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
-        draw.rectangle(self.left + kl, self.top + 2, 21, self.HEIGHT - 2, '@clear')
-
-        for i in range(1, 21):
-            draw.line(self.left + kl + i, self.top + 4, self.left + kl + i, self.top + self.HEIGHT, '@neutral')
-        for i in [3, 7, 10, 14, 17]:
-            draw.line(self.left + kl + i, self.top + 2, self.left + kl + i, self.top + self.HEIGHT - 2, '@neutral')
-
-        draw.rectangle(self.left + kl + 0 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 3 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 7 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 10 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 14 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
-        draw.rectangle(self.left + kl + 17 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
-
-        for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
-            draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
-
-        self._initDrawingMap()
-        self.deselectOctave(self.camera / 12)
-        self.updateSamplesColors()
-        self.updateKeysDrawingMap()
-
-    """ draw in wide """
-    def redraw(self):        
-        events.emit('REDRAW_PIANO', {'step': 1})    
-
     def _redraw(self):        
         self.redrawStep1() 
         self.redrawStep2() 
@@ -140,16 +99,22 @@ class MidiPiano(AreaWide):
 
     def redrawInfo(self):
         kl = self.KEYBOARDLEFT
-        for i in range(0, 5):
-            key = 'colortable-' + str(i)
-            if self.drawingMap[key] != self._lastDrawingMap[key]:
-                args = self.drawingMap[key].split(' ')
-                x = self.left + kl + 7 * 3
-                y = self.top + 1.5 + i
-                draw.clearRect(x + 0.5, y, 3, 1, '@light')
-                if args[1][0:4] != 'None':
-                    draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, args[0])
-                    draw.text(args[1], x + 1.25, y + 0.45, '@dark tiny midleft')
+        x = self.left + kl + 7 * 3
+        y = self.top + 1.5
+        fullRedraw = False
+        if self.drawingMap['info'] != self._lastDrawingMap['info']:
+            draw.clearRect(x, y, 4, 5, '@light')
+            fullRedraw = True
+
+        if self.drawingMap['info'] == '1':
+            if fullRedraw or self.drawingMap['info-sample-color'] != self._lastDrawingMap['info-sample-color']:
+                color = self.drawingMap['info-sample-color']
+                draw.clearRect(x + 0.5, y + 0.25, 0.5, 0.5, '@light')
+                draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, color)
+            if fullRedraw or self.drawingMap['info-sample-name'] != self._lastDrawingMap['info-sample-name']:
+                name = self.drawingMap['info-sample-name']
+                draw.clearRect(x + 1.25, y + 0.25, 1.5, 0.5, '@light')
+                draw.text(name, x + 1.25, y + 0.45, '@dark tiny midleft')
 
     def redrawOctaves(self):
         kl = self.KEYBOARDLEFT
@@ -216,16 +181,25 @@ class MidiPiano(AreaWide):
         file.close()
 
     def selectNote(self, note):
+
+        sample = self.samples[note + self.camera]
+        self._dm_keyChanged(note, selected = True)
+        if sample != None:
+            self._dm_infoChanged(display = True, samplecolor = self.samplesColors[sample], samplename = sample)
+        else:
+            self._dm_infoChanged(display = False)
+
         if self.selectedType == 'note' and self.selected == note:
             return
+
         self._dm_keyChanged(self.selected, selected = False)
         self.selectedType = 'note'
         self.selected = note
-        self._dm_keyChanged(note, selected = True)
         self._redraw()
 
-    def deselectNote(self):
+    def deselectNotes(self):
         self._dm_keyChanged(self.selected, selected = False)
+        self._dm_infoChanged(display = False)
 
     def selectOctave(self, leftoctave):
         self.selectedType = 'octave'
@@ -252,7 +226,6 @@ class MidiPiano(AreaWide):
             text = bank + text[1:3]
         self.samples[sel] = text
         self.updateSamplesColors()
-        #self._dm_keyChanged(self.selected, samplename = text)
         self.updateKeysDrawingMap()
         self.inputpointer = 0
         self._redraw()
@@ -277,10 +250,6 @@ class MidiPiano(AreaWide):
             keys[2]: self.COLORS[2],
             keys[3]: self.COLORS[3],
             keys[4]: self.COLORS[4]}
-
-        for i in range(0, 5):
-            key = keys[i]
-            self._dm_infoChanged(i, color = self.samplesColors[key], text = key)
 
         for i in range(0, 12 * 3):
             sample = self.samples[i + self.camera]
@@ -312,26 +281,75 @@ class MidiPiano(AreaWide):
             key = 'octave-' + str(i)
             self.drawingMap[key] = bitmask[i]
 
-    def _dm_infoChanged(self, n, color = None, text = None):
-        key = 'colortable-' + str(n)
-        args = self.drawingMap[key].split(' ')
-        col = args[0] if color == None else color
-        txt = args[1] if text == None else text
-        self.drawingMap[key] = interpolate('{col} {txt}')
+    def _dm_infoChanged(self, display = None, samplecolor = None, samplename = None):
+        if display != None:
+            self.drawingMap['info'] = '1' if display == True else '0'
+        if samplecolor != None:
+            self.drawingMap['info-sample-color'] = samplecolor
+        if samplename != None:
+            print(samplename)
+            self.drawingMap['info-sample-name'] = samplename
 
     def _initDrawingMap(self):
         for i in range(0, 12*3):
             self.drawingMap['key-' + str(i)] = '0 None None'
             self._lastDrawingMap['key-' + str(i)] = '0 None None'
-        for i in range(0, 5):
-            self.drawingMap['colortable-' + str(i)] = self.COLORS[i] + ' '
-            self._lastDrawingMap['colortable-' + str(i)] = '@clear '
+        self.drawingMap['info'] = '0'
+        self.drawingMap['info-sample-color'] = 'None'
+        self.drawingMap['info-sample-name'] = 'None'
+        self._lastDrawingMap['info'] = '0'
+        self._lastDrawingMap['info-sample-color'] = 'None'
+        self._lastDrawingMap['info-sample-name'] = 'None'
         for i in range(0, 9):
             self.drawingMap['octave-' + str(i)] = '0'
             self._lastDrawingMap['octave-' + str(i)] = '-'
         self.drawingMap['octave-3'] = '1'
         self.drawingMap['octave-4'] = '1'
         self.drawingMap['octave-5'] = '1'
+
+    """ abstract wide """
+
+    def deactivate(self):
+        self._dm_keyChanged(self.selected, selected = False)
+        self.redraw()
+
+    def redrawTitle(self):
+        draw.clearRect(self.left, self.top, self.WIDTH, 1);
+        draw.rectangle(self.left, self.top, self.WIDTH, 1, '@neutral')
+        draw.text('Пианино ' + str(self.n), self.left, interpolate('{self.top}ch + 2p'), '#ffffff console topleft')
+        
+    def initDraw(self):
+        self._initDrawingMap()
+        kl = self.KEYBOARDLEFT
+        draw.clearRect(self.left, self.top + 1, self.WIDTH, self.HEIGHT, clearColor = '@neutral');
+        draw.rectangle(self.left, self.top + 1, self.WIDTH, 1, '@light')
+        draw.rectangle(self.left, self.top + self.HEIGHT, self.WIDTH, 1, '@light')
+        draw.rectangle(self.left + self.WIDTH - 4, self.top + 1, 4, self.HEIGHT, '@light')
+        draw.rectangle(self.left, self.top + 1, kl, self.HEIGHT, '@light')
+        draw.rectangle(self.left + kl, self.top + 2, 21, self.HEIGHT - 2, '@clear')
+
+        for i in range(1, 21):
+            draw.line(self.left + kl + i, self.top + 4, self.left + kl + i, self.top + self.HEIGHT, '@neutral')
+        for i in [3, 7, 10, 14, 17]:
+            draw.line(self.left + kl + i, self.top + 2, self.left + kl + i, self.top + self.HEIGHT - 2, '@neutral')
+
+        draw.rectangle(self.left + kl + 0 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
+        draw.rectangle(self.left + kl + 3 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
+        draw.rectangle(self.left + kl + 7 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
+        draw.rectangle(self.left + kl + 10 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
+        draw.rectangle(self.left + kl + 14 + 0.5, self.top + 2, 2, self.HEIGHT - 4, '@neutral')
+        draw.rectangle(self.left + kl + 17 + 0.5, self.top + 2, 3, self.HEIGHT - 4, '@neutral')
+
+        for i in [1, 4, 5, 8, 11, 12, 15, 18, 19, 20]:
+            draw.line(self.left + kl + i + 0.5, self.top + 2, self.left + kl + i + 0.5, self.top + self.HEIGHT - 2, '@clear')
+
+        self._initDrawingMap()
+        self.deselectOctave(self.camera / 12)
+        self.updateSamplesColors()
+        self.updateKeysDrawingMap()
+
+    def redraw(self):        
+        events.emit('REDRAW_PIANO', {'step': 1})    
 
 
     # wide events
@@ -365,7 +383,7 @@ class MidiPiano(AreaWide):
 
     def upPressed(self):
         if self.selectedType == 'note':
-            self.deselectNote()
+            self.deselectNotes()
             self.selectOctave(self.camera / 12)
 
     def downPressed(self):
