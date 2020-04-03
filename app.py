@@ -30,6 +30,7 @@ from samplesPanelWide import SamplesPanelWide
 from midiController import MidiController 
 from midiPiano import MidiPiano
 from midiPads import MidiPads
+import autoplayController as autoplay
 
 """ Main Loop """
 streamTimeStart = 0
@@ -87,6 +88,7 @@ def start():
     draw.setDefaultFont('open-sans')
     metronome.redraw()
     console.redraw()
+    autoplay.setSubscribers([midi, sampler])
 
 def update():
     ticks = pygame.time.get_ticks()
@@ -188,6 +190,8 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     tonearmB.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
     metronome.moveBy(frames, samplerate = settings.samplerate)
 
+    autoplay.move(frames)
+
 def samplerateChanged(rate):
     for track in tracks:
         track.resetMemory(samplerate = settings.samplerate)
@@ -243,6 +247,7 @@ def bpmChanged(bpm):
         track.resetMemory(samplerate = settings.samplerate)
     tonearmA.resetSize(bpm, samplerate = settings.samplerate)
     tonearmB.resetSize(bpm, samplerate = settings.samplerate)
+    autoplay.updateBpm(bpm, samplerate = settings.samplerate)
 
 def processConsoleCommand(event):
     console.processCommand()
@@ -557,6 +562,7 @@ def main():
                         track.onBar()
                     if (beat % 16) == 0:
                         track.onGlobalLoop()
+                autoplay.onBeat()
             elif events.check(event, 'BPM_HALF_TICK'):
                 beat = event.dict['beat']
                 for track in tracks:

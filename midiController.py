@@ -21,6 +21,9 @@ class MidiController:
             raise 'channel is used!'
         self.channels[n] = midiInstrument
 
+    def autoplayTick(self, n, fraction):
+        pass
+
     def findDeviceByName(self, name):
         devices = []
         for i in range( 0, pygame.midi.get_count() ):

@@ -17,6 +17,9 @@ class SamplesController:
         self._possibleSuspendModes = ['stop oct', 'pedal', 'sus solo', 'sus portm', 'sus chord']
         self.currents = []
 
+    def autoplayTick(self, n, fraction):
+        pass
+
     """ очистить все over == True. надо иногда вызывать """
     def cleanUp(self):
         pass
