@@ -12,6 +12,7 @@ class MidiPiano(AreaWide):
         self.n = n
         self.samples = np.full((9 * 12), None)
         self.sampler = sampler
+        self.repeats = dict.fromkeys(sampler.finals, None)
         self.volume = 0.5
         self.left = 1
         self.top = 19
@@ -27,6 +28,10 @@ class MidiPiano(AreaWide):
         self.drawingMap = {}
         self._lastDrawingMap = {}
         self._initDrawingMap()
+        self.noteSettings = {
+            'row': 'None',
+            'col': 0
+        }
 
     def getKeyRect(self, n):
         positions = [0, 0.5, 1, 1.5, 2, 3, 3.5, 4, 4.5, 5, 5.5, 6]
@@ -53,10 +58,15 @@ class MidiPiano(AreaWide):
         events.emit('REDRAW_PIANO', {'step': 1})
 
     def press(self, note, strengh):
-        self.sampler.play(self.samples[note], channel = self.n, key = note - 12)
+        options = {}
+        samplename = self.samples[note]
+        if self.repeats[samplename] != None:
+            options['repeat'] = self.repeats[samplename]
+        self.sampler.play(samplename, options = options, channel = self.n, key = note - 12)
 
     def release(self, note, strengh):
-        self.sampler.stop(self.samples[note], channel = self.n, key = note - 12)
+        samplename = self.samples[note]
+        self.sampler.stop(samplename, channel = self.n, key = note - 12)
 
     def _redraw(self):        
         self.redrawStep1() 
@@ -102,19 +112,48 @@ class MidiPiano(AreaWide):
         x = self.left + kl + 7 * 3
         y = self.top + 1.5
         fullRedraw = False
-        if self.drawingMap['info'] != self._lastDrawingMap['info']:
+
+        def changed(name):
+            return self.drawingMap[name] != self._lastDrawingMap[name]
+
+        if changed('info'):
             draw.clearRect(x, y, 4, 5, '@light')
             fullRedraw = True
 
-        if self.drawingMap['info'] == '1':
-            if fullRedraw or self.drawingMap['info-sample-color'] != self._lastDrawingMap['info-sample-color']:
+        if self.drawingMap['info'] == 'display':
+            if fullRedraw or changed('info-sample-color'):
                 color = self.drawingMap['info-sample-color']
                 draw.clearRect(x + 0.5, y + 0.25, 0.5, 0.5, '@light')
                 draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, color)
-            if fullRedraw or self.drawingMap['info-sample-name'] != self._lastDrawingMap['info-sample-name']:
+            if fullRedraw or changed('info-sample-name'):
                 name = self.drawingMap['info-sample-name']
                 draw.clearRect(x + 1.25, y + 0.25, 1.5, 0.5, '@light')
                 draw.text(name, x + 1.25, y + 0.45, '@dark tiny midleft')
+
+        if self.drawingMap['info'] == 'settings':
+            cursor = self.drawingMap['info-sample-settings-cursor']
+            if changed('info-sample-settings-cursor'):
+                fullRedraw = True
+            if fullRedraw or changed('info-sample-color'):
+                color = self.drawingMap['info-sample-color']
+                if color != 'None':
+                    draw.clearRect(x + 0.5, y + 0.25, 0.5, 0.5, '@light')
+                    draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, color)
+            if fullRedraw or changed('info-sample-name'):
+                name = self.drawingMap['info-sample-name']
+                draw.clearRect(x + 1.25, y + 0.25, 1.5, 0.5, '@light')
+                draw.text(name, x + 1.25, y + 0.45, '@dark tiny midleft')
+            if fullRedraw or changed('info-sample-repeat'):
+                text = self.drawingMap['info-sample-repeat']
+                print(text)
+                text = text if text != 'None' else '-'
+                draw.clearRect(x, y + 1, 4, 1, '@light')
+                if cursor == '0 0':
+                    draw.rectangle(x + 0.5, y + 1.15, 1.5, 0.7, '@set')
+                draw.text('repeat', x + 0.25, y + 1.45, '@dark tiny midleft')
+                draw.rectangle(x + 2.40, y + 1.15, 1.3, 0.7, '@set' if cursor == '0 1' else '@clear')
+                draw.text(text, x + 3, y + 1.45, '@dark tiny center')
+
 
     def redrawOctaves(self):
         kl = self.KEYBOARDLEFT
@@ -185,21 +224,22 @@ class MidiPiano(AreaWide):
         sample = self.samples[note + self.camera]
         self._dm_keyChanged(note, selected = True)
         if sample != None:
-            self._dm_infoChanged(display = True, samplecolor = self.samplesColors[sample], samplename = sample)
+            self._dm_infoChanged(mode = 'display', samplecolor = self.samplesColors[sample], samplename = sample)
         else:
-            self._dm_infoChanged(display = False)
+            self._dm_infoChanged(mode = 'None')
 
         if self.selectedType == 'note' and self.selected == note:
             return
 
         self._dm_keyChanged(self.selected, selected = False)
+        self._dm_infoChanged(selectedSettings = 'None')
         self.selectedType = 'note'
         self.selected = note
         self._redraw()
 
     def deselectNotes(self):
         self._dm_keyChanged(self.selected, selected = False)
-        self._dm_infoChanged(display = False)
+        self._dm_infoChanged(mode = 'None')
 
     def selectOctave(self, leftoctave):
         self.selectedType = 'octave'
@@ -213,6 +253,11 @@ class MidiPiano(AreaWide):
         x = int(leftoctave)
         self._dm_octavesChanged(('0' * x) + ('1' * 3) + ('0' * (6 - x)))
         self.updateKeysDrawingMap()
+        self.redraw()
+
+    def selectNoteSettings(self, note):
+        self.selectedType = 'settings'
+        self._dm_infoChanged(mode = 'settings', selectedSettings = 'repeat')
         self.redraw()
 
     def setBankForSelectedKey(self, bank):
@@ -229,6 +274,68 @@ class MidiPiano(AreaWide):
         self.updateKeysDrawingMap()
         self.inputpointer = 0
         self._redraw()
+
+    def settingsTableRight(self):
+        if self.selectedType != 'settings':
+            return
+
+        if self.noteSettings['row'] == 'None':
+            self.noteSettings['row'] = 'repeat'
+
+        if self.noteSettings['row'] == 'repeat':
+            self.noteSettings['col'] += 1
+            if self.noteSettings['col'] > 1:
+                self.noteSettings['col'] = 1
+        self._dm_infoChanged(selectedSettings = self.noteSettings['row'], selectedCol = self.noteSettings['col'])
+        self.redraw()
+
+    def settingsTableLeft(self):
+        if self.selectedType != 'settings':
+            return
+
+        if self.noteSettings['row'] == 'None':
+            self.noteSettings['row'] = 'repeat'
+
+        if self.noteSettings['row'] == 'repeat':
+            self.noteSettings['col'] -= 1
+            if self.noteSettings['col'] < 0:
+                self.noteSettings['col'] = 0
+        self._dm_infoChanged(selectedSettings = self.noteSettings['row'], selectedCol = self.noteSettings['col'])
+        self.redraw()
+
+    def settingsTableUp(self):
+        if self.selectedType != 'settings':
+            return
+
+        if self.noteSettings['row'] == 'None':
+            self.noteSettings['row'] = 'repeat'
+
+        if self.noteSettings['row'] == 'repeat':
+            sets = [64, 32, 16, 8, 4, 2, None]
+            samplename = self.samples[self.selected + self.camera]
+            n = sets.index(self.repeats[samplename])
+            n = n - 1 if n > 0 else 0
+            self.repeats[samplename] = sets[n]
+            reps = '1/' + str(sets[n])
+            self._dm_infoChanged(repeats = reps)
+        self.redraw()
+
+    def settingsTableDown(self):
+        if self.selectedType != 'settings':
+            return
+
+        if self.noteSettings['row'] == 'None':
+            self.noteSettings['row'] = 'repeat'
+
+        if self.noteSettings['row'] == 'repeat':
+            sets = [64, 32, 16, 8, 4, 2, None]
+            samplename = self.samples[self.selected + self.camera]
+            n = sets.index(self.repeats[samplename])
+            n = n + 1 if n < 6 else 6
+            self.repeats[samplename] = sets[n]
+            reps = '1/' + str(sets[n]) if n != 6 else 'None'
+            self._dm_infoChanged(repeats = reps)
+        self.redraw()
 
     def updateSamplesColors(self):
         counts = dict.fromkeys(self.sampler.finals, (-1, 0))
@@ -281,14 +388,20 @@ class MidiPiano(AreaWide):
             key = 'octave-' + str(i)
             self.drawingMap[key] = bitmask[i]
 
-    def _dm_infoChanged(self, display = None, samplecolor = None, samplename = None):
-        if display != None:
-            self.drawingMap['info'] = '1' if display == True else '0'
+    def _dm_infoChanged(self, mode = None, samplecolor = None, samplename = None, selectedSettings = None, selectedCol = None, repeats = None):
+        if mode != None:
+            self.drawingMap['info'] = mode
         if samplecolor != None:
             self.drawingMap['info-sample-color'] = samplecolor
         if samplename != None:
-            print(samplename)
             self.drawingMap['info-sample-name'] = samplename
+        if repeats != None:
+            self.drawingMap['info-sample-repeat'] = repeats
+        if selectedSettings != None:
+            sets = {'repeat': 0}
+            set = sets[selectedSettings if selectedSettings != 'None' else 'repeat']
+            col = selectedCol if selectedCol != None else 0
+            self.drawingMap['info-sample-settings-cursor'] = interpolate('{set} {col}')
 
     def _initDrawingMap(self):
         for i in range(0, 12*3):
@@ -297,9 +410,11 @@ class MidiPiano(AreaWide):
         self.drawingMap['info'] = '0'
         self.drawingMap['info-sample-color'] = 'None'
         self.drawingMap['info-sample-name'] = 'None'
+        self.drawingMap['info-sample-repeat'] = 'None'
         self._lastDrawingMap['info'] = '0'
         self._lastDrawingMap['info-sample-color'] = 'None'
         self._lastDrawingMap['info-sample-name'] = 'None'
+        self._lastDrawingMap['info-sample-repeat'] = 'None'
         for i in range(0, 9):
             self.drawingMap['octave-' + str(i)] = '0'
             self._lastDrawingMap['octave-' + str(i)] = '-'
@@ -354,8 +469,14 @@ class MidiPiano(AreaWide):
 
     # wide events
 
+    def escPressed(self):
+        self.selectNote(self.selected)
+        self._redraw()
+
     def enterPressed(self):
-        self.sampler.play(self.samples[self.selected + self.camera], channel = 99, key = self.selected + self.camera)
+        #self.sampler.play(self.samples[self.selected + self.camera], channel = 99, key = self.selected + self.camera)
+        if self.samples[self.selected + self.camera] != None:
+            self.selectNoteSettings(self.samples[self.selected + self.camera])
 
     def rightPressed(self):
         if self.selectedType == 'note':
@@ -368,6 +489,8 @@ class MidiPiano(AreaWide):
             else:
                 self.camera += 12
                 self.selectOctave(self.camera / 12)
+        elif self.selectedType == 'settings':
+            self.settingsTableRight()
 
     def leftPressed(self):
         if self.selectedType == 'note':
@@ -380,16 +503,22 @@ class MidiPiano(AreaWide):
             else:
                 self.camera -= 12
                 self.selectOctave(self.camera / 12)
+        elif self.selectedType == 'settings':
+            self.settingsTableLeft()
 
     def upPressed(self):
         if self.selectedType == 'note':
             self.deselectNotes()
             self.selectOctave(self.camera / 12)
+        elif self.selectedType == 'settings':
+            self.settingsTableUp()
 
     def downPressed(self):
         if self.selectedType == 'octave':         
             self.deselectOctave(self.camera / 12)
             self.selectNote(self.selected)
+        elif self.selectedType == 'settings':
+            self.settingsTableDown()
 
     def digitPressed(self, n):
         if self.selectedType == 'note':

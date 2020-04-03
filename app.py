@@ -295,6 +295,10 @@ def escPressed(event):
     for track in tracks:
         track.cancel()
 
+def wideEsc(event):
+    if "escPressed" in dir(currentWide):
+        currentWide.escPressed() 
+
 def wideEnter(event):
     if "enterPressed" in dir(currentWide):
         currentWide.enterPressed()    
@@ -352,7 +356,6 @@ def sideEnter(event):
         currentSide.enterPressed()    
 
 def sideRight(event):
-    print(currentSide)
     if "rightPressed" in dir(currentSide):
         currentSide.rightPressed()
 
@@ -494,6 +497,7 @@ hotkeys.simple('c', sideC, "side")
 hotkeys.simple('d', sideD, "side")
 hotkeys.simple('r', sideR, "side")
 
+hotkeys.simple('esc', wideEsc, "wide")
 hotkeys.simple('enter', wideEnter, "wide")
 hotkeys.simple('right', wideRight, "wide")
 hotkeys.simple('up', wideUp, "wide")

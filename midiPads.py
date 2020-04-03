@@ -35,7 +35,6 @@ class MidiPads(AreaSide):
         for i in range(0, len(self.samples)):
             #x = 'map ' + str(i)
             if x in dict:
-                print(x)
                 self.samples[i] = dict[x]
         self.redraw()
 

@@ -27,7 +27,6 @@ class MidiController:
     def findDeviceByName(self, name):
         devices = []
         for i in range( 0, pygame.midi.get_count() ):
-            print(name[:-2] + '   ' + str(pygame.midi.get_device_info(i))[:-2])
             if name[:-2] == str(pygame.midi.get_device_info(i))[:-2]:
                 return i
         return None
