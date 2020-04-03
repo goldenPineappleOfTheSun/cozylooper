@@ -1,1 +1,1 @@
-samplerate = 8000
+samplerate = 44100

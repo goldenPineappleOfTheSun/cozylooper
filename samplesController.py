@@ -18,7 +18,12 @@ class SamplesController:
         self.currents = []
 
     def autoplayTick(self, n, fraction):
-        pass
+        possibleRepeats = [1, 2, 4, 8, 16, 32, 64]
+        for sound in self.currents:
+            repeat = sound.options['repeat']
+            if sound.over == False and repeat in possibleRepeats:
+                if n % (64 / repeat) == 0:
+                    sound.restart() 
 
     """ очистить все over == True. надо иногда вызывать """
     def cleanUp(self):

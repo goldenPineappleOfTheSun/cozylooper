@@ -61,6 +61,9 @@ class SoundingSample:
 
         return sound * self.volume
 
+    def restart(self):
+        self.pointer = 0
+
     def wheelVolume(self, relative):
         self.volume += relative
         if self.volume > 1:
@@ -81,6 +84,8 @@ class SoundingSample:
             self.options['glide'] = False
         if not 'glidespeed' in self.options:
             self.options['glidespeed'] = 0.9
+        if not 'repeat' in self.options:
+            self.options['repeat'] = 0
 
     def _setDefaultStartInfo(self):
         if not 'note' in self.atStartInfo:

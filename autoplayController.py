@@ -17,21 +17,13 @@ def setSubscribers(list):
     subscribers = list
 
 def onBeat():
-    global n
-    global fraction
-    global ticks
-    global size64
-    global nextBeat
-    nextBeat = True
-    """n = 0
-    fraction = 0
-    ticks = 0"""
+    pass
 
 def updateBpm(bpm, samplerate = 44100):
     global size64
     global size1
-    size1 = ((bpm / 60) * samplerate) / 1
-    size64 = ((bpm / 60) * samplerate) / 64
+    size1 = (samplerate / (bpm / 60)) * 4
+    size64 = size1 / 64
     samplerate = samplerate
 
 def move(frames):
