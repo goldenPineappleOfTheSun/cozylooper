@@ -48,6 +48,11 @@ marginTop = 1
 wire = Wire(inputDevice = 8, outputDevice = 8)
 if (sd.query_devices(wire.inputDevice)['name'] != 'Yamaha Steinberg USB ASIO'):
     raise Exception('NOPE! ' + sd.query_devices(wire.inputDevice)['name'])
+wireTempData = {
+    'audio': [],
+    'cursor': 0,
+    'midi-audio': []
+}
 
 metronome = Metronome(120, left = 16, top = marginTop)
 tracks = [
@@ -163,15 +168,26 @@ def tick():
     tonearmB.update()
 
 def wireCallback(indata, outdata, frames, timeinfo, status):
+    global wireTempData
     global streamTimeStart
     outdata[:] = indata
+
+    mask, fromSamples, fromSamplesSum = sampler.read(frames)
+
+    wireTempData['audio'] = indata
+    wireTempData['midi-audio'] = [[]] * 16
+    for i in range(0, len(mask)):
+        if mask[i]:
+            wireTempData['midi-audio'][i] = fromSamples[i]
+
     if streamTimeStart == 0:
         streamTimeStart = timeinfo.inputBufferAdcTime
     elapsed = timeinfo.inputBufferAdcTime - streamTimeStart
+
     for track in tracks:
         if track.canWrite():
-            data = processor.stereoToMono(indata, 1)
-            track.write(data, elapsed, frames = frames, samplerate = settings.samplerate)
+            #data = processor.stereoToMono(indata, 1)
+            track.write(wireTempData, elapsed, frames = frames, samplerate = settings.samplerate)
         if track.canRead():
             read = track.read(elapsed, frames = frames, samplerate = settings.samplerate)         
             data = processor.monoToStereo(read)
@@ -182,9 +198,7 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
         """
     read = metronome.readSound(frames)
     outdata += reshapeSound(read, outdata.shape)
-
-    fromSamples = processor.monoToStereo(sampler.read(frames))
-    outdata += reshapeSound(fromSamples, outdata.shape)
+    outdata += reshapeSound(processor.monoToStereo(fromSamplesSum), outdata.shape)
 
     tonearmA.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
     tonearmB.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)

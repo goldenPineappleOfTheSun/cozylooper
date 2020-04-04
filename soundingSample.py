@@ -3,8 +3,9 @@ import processor
 import math
 
 class SoundingSample:
-    def __init__(self, controller, code, name, options, atStartInfo = {}):
+    def __init__(self, controller, channel, code, name, options, atStartInfo = {}):
         self.code = code
+        self.channel = channel
         self.controller = controller
         self.name = name
         self.options = options.copy()

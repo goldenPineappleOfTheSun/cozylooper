@@ -83,10 +83,12 @@ class SamplesController:
 
         atStartInfo = {'note': notes[key % 12], 'octave': octaves[math.floor(key / 12)]}
 
-        self.currents.append(SoundingSample(self, code, samplename, options, atStartInfo = atStartInfo))
+        self.currents.append(SoundingSample(self, channel, code, samplename, options, atStartInfo = atStartInfo))
 
     def read(self, frames):
         result = np.zeros(frames)
+        channelsMask = [False] * 16
+        channels = [None]
         currentscount = 0
         for sound in self.currents:
             if sound.over == False:
@@ -94,13 +96,17 @@ class SamplesController:
                 wave = sound.read(frames)
                 if wave.any():
                     result += wave
+                    if channelsMask[sound.channel] == False:
+                        channelsMask[sound.channel] = True
+                        channels[sound.channel] = np.zeros(frames)
+                    channels[sound.channel] += wave
         if currentscount > 4:
             index = 0
             for cur in self.currents:
                 if sound.over == False:
                     cur.wheelVolume((currentscount - 4) * math.pow(cur.timespan, 1.2) * index * -1e-8)
                     index += 1
-        return result
+        return channelsMask, channels, result
 
     def save(self, path):    
         file = open(path + '/sampler.save', 'w+')
@@ -113,7 +119,7 @@ class SamplesController:
         if self.suspendModes[samplename] == 'pedal':
             return
 
-        code =self.generateSoundCode(channel, key, samplename, options)
+        code = self.generateSoundCode(channel, key, samplename, options)
 
         for sound in filter(lambda x: x.code == code, self.currents):
             sound.fadeout = 0.5

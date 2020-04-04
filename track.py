@@ -6,6 +6,7 @@ import sounddevice as sd
 import drawing as draw
 from trackStates import TrackState
 import globalSettings as settings
+import processor
 
 class Track:
     def __init__(self, n, behaviour, left = 0, top = 0):
@@ -23,6 +24,10 @@ class Track:
         self._initDraw = True
         self.bufferSize = sd.default.blocksize
         self.memory = np.empty(2000)
+        self.channelInfo = {
+            'name': 'midi',
+            'channel': 0
+        }
 
         """ 
         TODO: smooth
@@ -201,6 +206,15 @@ class Track:
     def setBehaviour(self, beh):        
         self.behaviour = beh
 
+    def setAudioChannel(self, channel):
+        self.channelInfo['name'] = 'audio'
+        self.channelInfo['channel'] = channel
+
+    def setMidiChannel(self, channel):
+        self.channelInfo['name'] = 'midi'
+        self.channelInfo['channel'] = channel
+
+
     def toggleChangeSize(self):
         if self.state == TrackState.default: 
             self.state = TrackState.setSize
@@ -268,6 +282,20 @@ class Track:
 
 
     def write(self,
+              wireTempData, 
+              timeinfo,
+              samplerate = 44100,   
+              frames = sd.default.blocksize):
+        if self.channelInfo['name'] == 'audio':
+            data = processor.stereoToMono(wireTempData['audio'], self.channelInfo['channel'])
+            self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
+        if self.channelInfo['name'] == 'midi':
+            data = wireTempData['midi-audio'][self.channelInfo['channel']]
+            if data == []:
+                data = np.zeros(frames)
+            self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
+
+    def _writeAudio(self,
               indata, 
               timeinfo,
               samplerate = 44100,   
