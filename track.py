@@ -28,6 +28,8 @@ class Track:
             'name': 'midi',
             'channel': 0
         }
+        self._smoothStart = 0
+        self._smoothPointer = 0
 
         """ 
         TODO: smooth
@@ -69,7 +71,7 @@ class Track:
 
 
     def canWrite(self):
-        return self.state == TrackState.record
+        return self.state == TrackState.record or self._smoothPointer > 0
 
     def canRead(self):
         return self.state == TrackState.play
@@ -214,6 +216,22 @@ class Track:
         self.channelInfo['name'] = 'midi'
         self.channelInfo['channel'] = channel
 
+    def smoothAfter(self, indata, timeinfo, samplerate = 44100, frames = sd.default.blocksize):
+        if len(self.memory) < self._smoothPointer:
+            self._smoothPointer = 0
+        vol = self._smoothPointer / self._smoothStart * 0.5
+        data =  indata[:] * vol
+        for i in range(0, frames):
+            self._smoothPointer -= 1
+            if self._smoothPointer < 1 or vol == 0:
+                self._smoothPointer = 0
+                return
+            pos = self._smoothStart - self._smoothPointer
+            self.memory[pos] = self.memory[pos] * (1 - vol * 0.5) + data[i]
+
+    def startSmoothAfter(self, frames):
+        self._smoothStart = frames
+        self._smoothPointer = frames
 
     def toggleChangeSize(self):
         if self.state == TrackState.default: 
@@ -256,36 +274,7 @@ class Track:
             self.redraw()
             self._initDraw = False
 
-    """ 
-    TODO: smooth
-    def fade(self,
-             indata, 
-             timeinfo,
-             samplerate = 44100,   
-             frames = sd.default.blocksize, 
-             channels = 2):
-        if not self.fadesEnabled:
-            return
-        
-        for i in range(0, frames):
-            #self.fadeInMemory[:][self._fadeInPointer] = 0
-            a = self.fadeInMemory[:][self._fadeInPointer]
-            self._fadeInPointer = (self._fadeInPointer + 1) % len(self.fadeInMemory)
-
-            if self._fadeOutPointer > 0:
-                self.fadeOutMemory[len(self.fadeOutMemory) - self._fadeOutPointer] = indata[i]
-            elif self._fadeOutPointer == 0:
-                self.appendFades()
-                self._fadeOutPointer = -1
-        """
-
-
-
-    def write(self,
-              wireTempData, 
-              timeinfo,
-              samplerate = 44100,   
-              frames = sd.default.blocksize):
+    def write(self, wireTempData, timeinfo, samplerate = 44100, frames = sd.default.blocksize):
         if self.channelInfo['name'] == 'audio':
             data = processor.stereoToMono(wireTempData['audio'], self.channelInfo['channel'])
             self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
@@ -295,17 +284,18 @@ class Track:
                 data = np.zeros(frames)
             self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
 
-    def _writeAudio(self,
-              indata, 
-              timeinfo,
-              samplerate = 44100,   
-              frames = sd.default.blocksize):
+    def _writeAudio(self, indata, timeinfo, samplerate = 44100, frames = sd.default.blocksize):
+        if self._smoothPointer > 0:
+            self.smoothAfter(indata, timeinfo, samplerate = samplerate, frames = frames)
+        
+        if self.state != TrackState.record:
+            return
+
         for i in range(0, frames):
             if len(self.memory) > self._pos + i:
                 self.memory[self._pos + i] = indata[i]
-        self._pos = (self._pos + frames)
-        volmul = 5
-        maxvol = np.amax(np.abs(indata)) * volmul
+        self._pos = self._pos + frames
+        maxvol = np.amax(np.abs(indata)) * 5
         if self.histogram[self.beat] < maxvol:
             self.histogram[self.beat] += 0.01
         else:
@@ -364,4 +354,3 @@ class Track:
         if self.state == TrackState.setSize or self.state == TrackState.awaitingChanges:
             return 
         self.behaviour.onPlayStop(self)
-

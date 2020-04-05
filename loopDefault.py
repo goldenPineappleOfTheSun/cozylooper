@@ -11,27 +11,28 @@ class LoopDefault:
             track.redraw()
 
     def onBar(track):
-    	if track.state == TrackState.readyToRecord:
-    		track.state = TrackState.record
-    		track.beat = 0
-    		track.redraw()
+        if track.state == TrackState.readyToRecord:
+            track.state = TrackState.record
+            track.beat = 0
+            track.redraw()
 
     def onTrackStarted(track):
-    	pass
+        pass
  
     def onTrackEnded(track):
-    	if track.state == TrackState.record:
-    		track.state = TrackState.default
-	    	if track.playAfterRecord:
-	    		track.state = TrackState.play
-	    		track.playAfterRecord = False
-    		track.redraw()
+        if track.state == TrackState.record:
+            track.state = TrackState.default
+            if track.playAfterRecord:
+                track.state = TrackState.play
+                track.playAfterRecord = False
+            track.startSmoothAfter(10000)
+            track.redraw()
  
     def onGlobalLoop(track):
-    	if track.state == TrackState.awaitingChanges:
-    		track.state = TrackState.default
-    		track.beat = 0
-    		track.redraw()
+        if track.state == TrackState.awaitingChanges:
+            track.state = TrackState.default
+            track.beat = 0
+            track.redraw()
 
     def onRecordDemanded(track):
         track.state = TrackState.readyToRecord
@@ -49,4 +50,3 @@ class LoopDefault:
     def onPlayStop(track):
         track.state = TrackState.default
         track.redraw()
-

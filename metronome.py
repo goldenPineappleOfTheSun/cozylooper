@@ -85,7 +85,7 @@ class Metronome:
     def onBeat(self):   
         self.highPitched = False if self.beatNumber % 4 != 0 else True
         events.emit('BPM_TICK', {'beat': self.beatNumber})
-        self._readyToSound = True 
+        self._readyToSound = True
 
     def onHalfBeat(self):   
         events.emit('BPM_HALF_TICK', {'beat': self.beatNumber})

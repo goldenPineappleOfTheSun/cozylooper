@@ -54,6 +54,7 @@ wireTempData = {
     'midi-audio': []
 }
 
+
 metronome = Metronome(120, left = 16, top = marginTop)
 tracks = [
     Track(0, LoopDefault, 1, marginTop),
@@ -76,6 +77,7 @@ soundbank = Soundbank()
 sampler = SamplesController(soundbank)
 samplesControlPanel = SamplesPanelWide(sampler)
 midi = MidiController(sampler)
+
 
 """Wides"""
 listOfCommandsWide = ListOfCommandsWide()
