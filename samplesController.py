@@ -8,13 +8,27 @@ import random
 def zeroInterpolationFunction(x):
     return 0
 
+"""
+                       stop
+             none   note  octave  sample
+slide/sus      -      -      -      -
+slide/pick     -      -      -      -
+chord/sus    organ    -      -      -
+chord/pick   chaos  piano  guitar   -
+legato/sus     -      -      -    violin
+legato/pick    -      -      -    sampler
+solo/sus       -      -      -     flute
+solo/pick      -      -      -    sampler
+
+"""
+
 class SamplesController:
     def __init__(self, soundbank):
         self.soundbank = soundbank
         """ словарь словарей 1 ключи - названия сэмплов, 2 ключи - названия октав (для быстрого ресэмплинга) """
         self.finals = dict.fromkeys(soundbank.names, {})
-        self.suspendModes = dict.fromkeys(soundbank.names, 'sus chord')
-        self._possibleSuspendModes = ['stop oct', 'pedal', 'sus solo', 'sus portm', 'sus chord']
+        self.suspendModes = dict.fromkeys(soundbank.names, 'sampler')
+        self._possibleSuspendModes = ['organ', 'chaos', 'piano', 'guitar', 'violin', 'flute', 'sampler']
         self.currents = []
 
     def autoplayTick(self, n, fraction):
@@ -69,19 +83,19 @@ class SamplesController:
 
         options['loop'] = 'once'
         susMode = self.suspendModes[samplename]
-        if susMode == 'sus chord' or susMode == 'sus portm' or susMode == 'sus solo':
+        if susMode == 'organ' or susMode == 'violin' or susMode == 'flute':
             options['loop'] = 'loop'
+
+        if susMode == 'flute' or susMode == 'sampler' or susMode == 'violin':
+            self.stopSome(lambda x: x.name == samplename)
+        elif susMode == 'guitar':
+            self.stopSome(lambda x: x.atStartInfo['octave'] == octaves[math.floor(key / 12)])
+        elif susMode == 'piano':
+            self.stopSome(lambda x: x.atStartInfo['key'] == key)
 
         code = self.generateSoundCode(channel, key, samplename, options)
 
-        if susMode == 'sus solo' or susMode == 'stop samp':
-            self.stopSome(lambda x: x.name == samplename)
-        elif susMode == 'pedal':
-            self.stop(samplename, options, channel, key)
-        elif susMode == 'stop oct':
-            self.stopSome(lambda x: x.atStartInfo['octave'] == octaves[math.floor(key / 12)])
-
-        atStartInfo = {'note': notes[key % 12], 'octave': octaves[math.floor(key / 12)]}
+        atStartInfo = {'key': key, 'note': notes[key % 12], 'octave': octaves[math.floor(key / 12)]}
 
         self.currents.append(SoundingSample(self, channel, code, samplename, options, atStartInfo = atStartInfo))
 
