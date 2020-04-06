@@ -28,7 +28,7 @@ class Metronome:
         self.highPitchSound = np.concatenate((self.sound[0::2], [[0, 0] for _ in range(math.floor(len(self.sound) / 2))]))
         self.state = MetronomeState.idle
         self.highPitched = False
-        self.bias = 0.15
+        self.bias = 0
         self.beatNumber = 0
         self.maxBeats = 16
         self._flip = False

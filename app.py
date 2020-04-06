@@ -582,6 +582,7 @@ def main():
                         track.onBar()
                     if (beat % 16) == 0:
                         track.onGlobalLoop()
+                        sampler.cleanUp()
                 autoplay.onBeat()
             elif events.check(event, 'BPM_HALF_TICK'):
                 beat = event.dict['beat']

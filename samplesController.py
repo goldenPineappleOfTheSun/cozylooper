@@ -27,7 +27,7 @@ class SamplesController:
 
     """ очистить все over == True. надо иногда вызывать """
     def cleanUp(self):
-        pass
+        self.currents = list(filter(lambda x: not x.over, self.currents))
 
     def getSample(self, samplename, notename = 'c1'):
         return self.finals[samplename][notename[-1:]]
