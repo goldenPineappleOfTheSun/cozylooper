@@ -31,6 +31,7 @@ from midiController import MidiController
 from midiPiano import MidiPiano
 from midiPads import MidiPads
 import autoplayController as autoplay
+import timeSynchronization as sync
 
 """ Main Loop """
 streamTimeStart = 0
@@ -206,6 +207,7 @@ def wireCallback(indata, outdata, frames, timeinfo, status):
     tonearmB.moveBy(frames, metronome.bpm, samplerate = settings.samplerate)
     metronome.moveBy(frames, samplerate = settings.samplerate)
 
+    sync.move(frames)
     autoplay.move(frames)
 
 def samplerateChanged(rate):
@@ -264,6 +266,7 @@ def bpmChanged(bpm):
     tonearmA.resetSize(bpm, samplerate = settings.samplerate)
     tonearmB.resetSize(bpm, samplerate = settings.samplerate)
     autoplay.updateBpm(bpm, samplerate = settings.samplerate)
+    sync.onBpmChanged(bpm, samplerate = settings.samplerate)
 
 def processConsoleCommand(event):
     console.processCommand()

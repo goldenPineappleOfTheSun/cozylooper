@@ -46,7 +46,7 @@ class SamplesPanelWide(AreaWide):
             self.samples.append((name, len(self.samples)))
 
     def wheelSuspendMode(self, val):
-        modes = ['organ', 'chaos', 'piano', 'guitar', 'violin', 'flute', 'sampler']
+        modes = ['organ', 'chaos', 'piano', 'guitar', 'flute', 'sampler']
         sampleIndex = self.samples[self.selectedrow][0]
         pos = modes.index(self.sampler.suspendModes[sampleIndex])
         pos += val

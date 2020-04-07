@@ -30,34 +30,11 @@ class Track:
         }
         self._smoothStart = 0
         self._smoothPointer = 0
-
-        """ 
-        TODO: smooth
-        # smoother transitions
-        # fade in has pointer so no need to use queries
-        # fade out pointer counts time before stop
-        self.fadeInMemory = np.empty([100, 2])
-        self._fadeInPointer = 0
-        self.fadeOutMemory = np.empty([100, 2])
-        self._fadeOutPointer = 0
-        self.fadesEnabled = True
-        """
-        
         self._pos = 0
         self._memorySize = 0
         self.behaviour = behaviour
         self.playAfterRecord = False
         self.histogram = [0] * 16
-
-    """ 
-    TODO: smooth
-    def appendFades(self):
-        fadeLength = len(self.fadeOutMemory)
-        for i in range(0, np.shape(self.fadeOutMemory)[0]):
-            self.memory[i] = self.memory[i] + self.fadeOutMemory[i] * ((fadeLength - i) / fadeLength)
-        for i in range(0, np.shape(self.fadeInMemory)[0]):
-            self.memory[len(self.memory) - (fadeLength - i)] = self.memory[i] + self.fadeInMemory[i] * (1 - ((fadeLength - i) / fadeLength))
-    """
 
     def cancel(self):
         if self.state == TrackState.setSize:

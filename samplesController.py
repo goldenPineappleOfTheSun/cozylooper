@@ -4,6 +4,7 @@ import processor
 from utils import interpolate
 from soundingSample import SoundingSample
 import random
+import timeSynchronization as sync
 
 def zeroInterpolationFunction(x):
     return 0
@@ -15,8 +16,6 @@ slide/sus      -      -      -      -
 slide/pick     -      -      -      -
 chord/sus    organ    -      -      -
 chord/pick   chaos  piano  guitar   -
-legato/sus     -      -      -    violin
-legato/pick    -      -      -    sampler
 solo/sus       -      -      -     flute
 solo/pick      -      -      -    sampler
 
@@ -28,7 +27,7 @@ class SamplesController:
         """ словарь словарей 1 ключи - названия сэмплов, 2 ключи - названия октав (для быстрого ресэмплинга) """
         self.finals = dict.fromkeys(soundbank.names, {})
         self.suspendModes = dict.fromkeys(soundbank.names, 'sampler')
-        self._possibleSuspendModes = ['organ', 'chaos', 'piano', 'guitar', 'violin', 'flute', 'sampler']
+        self._possibleSuspendModes = ['organ', 'chaos', 'piano', 'guitar', 'flute', 'sampler']
         self.currents = []
 
     def autoplayTick(self, n, fraction):
@@ -83,10 +82,10 @@ class SamplesController:
 
         options['loop'] = 'once'
         susMode = self.suspendModes[samplename]
-        if susMode == 'organ' or susMode == 'violin' or susMode == 'flute':
+        if susMode == 'organ' or susMode == 'flute':
             options['loop'] = 'loop'
 
-        if susMode == 'flute' or susMode == 'sampler' or susMode == 'violin':
+        if susMode == 'flute' or susMode == 'sampler':
             self.stopSome(lambda x: x.name == samplename)
         elif susMode == 'guitar':
             self.stopSome(lambda x: x.atStartInfo['octave'] == octaves[math.floor(key / 12)])
@@ -97,6 +96,11 @@ class SamplesController:
 
         atStartInfo = {'key': key, 'note': notes[key % 12], 'octave': octaves[math.floor(key / 12)]}
 
+        if 'repeat' in options:
+            d = sync.getDelta('1/' + str(options['repeat']))
+            print(d)
+            if d < 0 and d > -2000:
+                options['postponed'] = True
         self.currents.append(SoundingSample(self, channel, code, samplename, options, atStartInfo = atStartInfo))
 
     def read(self, frames):

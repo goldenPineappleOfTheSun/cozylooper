@@ -1,6 +1,7 @@
 import numpy as np
 import processor
 import math
+import timeSynchronization as sync
 
 class SoundingSample:
     def __init__(self, controller, channel, code, name, options, atStartInfo = {}):
@@ -22,6 +23,9 @@ class SoundingSample:
 
     def read(self, framescount):
         global pitches
+
+        if self.options['postponed'] == True:
+            return np.zeros(framescount)
 
         note = self.options['pitch']
         pitch = processor.getPitchCoefficient(note[0:2] + '1')
@@ -64,6 +68,7 @@ class SoundingSample:
 
     def restart(self):
         self.pointer = 0
+        self.options['postponed'] = False
 
     def wheelVolume(self, relative):
         self.volume += relative
@@ -87,6 +92,8 @@ class SoundingSample:
             self.options['glidespeed'] = 0.9
         if not 'repeat' in self.options:
             self.options['repeat'] = 0
+        if not 'postponed' in self.options:
+            self.options['postponed'] = False
 
     def _setDefaultStartInfo(self):
         if not 'note' in self.atStartInfo:
