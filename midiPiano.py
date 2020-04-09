@@ -60,6 +60,8 @@ class MidiPiano(AreaWide):
     def press(self, note, strengh):
         options = {}
         samplename = self.samples[note]
+        if samplename == None:
+            return
         if self.repeats[samplename] != None:
             options['repeat'] = self.repeats[samplename]
         self.sampler.play(samplename, options = options, channel = self.n, key = note - 12)

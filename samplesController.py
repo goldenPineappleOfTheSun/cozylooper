@@ -98,7 +98,6 @@ class SamplesController:
 
         if 'repeat' in options:
             d = sync.getDelta('1/' + str(options['repeat']))
-            print(d)
             if d < 0 and d > -2000:
                 options['postponed'] = True
         self.currents.append(SoundingSample(self, channel, code, samplename, options, atStartInfo = atStartInfo))
@@ -106,7 +105,7 @@ class SamplesController:
     def read(self, frames):
         result = np.zeros(frames)
         channelsMask = [False] * 16
-        channels = [None]
+        channels = np.full(16, None)
         currentscount = 0
         for sound in self.currents:
             if sound.over == False:

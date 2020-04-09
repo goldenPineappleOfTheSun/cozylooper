@@ -9,17 +9,28 @@ import pygame.midi
 class MidiController:
 
     def __init__(self, sampler):
-        self.channels = np.full((16), None)
-        self.inputs = np.full((16), None)
-        self.wires = np.full((16), None)
+        """ instruments are instruments created inside the looper """
+        self.instruments = np.full((16), None)
+        """ inputs are devices from which midi messages are recieved. index is equal to midi channel """
+        self.inputs = []
+        """ channels are midi channels """
+        #self.channels = np.full((16), None)
+        """ wires are matchings between instruments and channels. key=channel value=instrument """
+        self.wires = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
         self.sampler = sampler
+
+    def initDevices(self, array = None):
+        if array == None:
+            for i in range(0, pygame.midi.get_count()):
+                if pygame.midi.get_device_info(i)[2] == 1:
+                    self.inputs.append(pygame.midi.Input(i))
 
     def appendChannel(self, n, midiInstrument):
         if n < 0 or n > 15:
             return
-        if self.channels[n] != None:
+        if self.instruments[n] != None:
             raise 'channel is used!'
-        self.channels[n] = midiInstrument
+        self.instruments[n] = midiInstrument
 
     def autoplayTick(self, n, fraction):
         pass
@@ -32,7 +43,7 @@ class MidiController:
         return None
 
     def isChannelUsed(self, n):
-        return self.channels[n] != None
+        return self.instruments[n] != None
 
     def load(self, path, console):
         for i in range(0, 16):
@@ -48,52 +59,47 @@ class MidiController:
             if device != None:
                 console.emulate(interpolate('wire-midi {channel} {device}'))
             events.emit('LOAD_INSTRUMENT', {'n': i, 'filename': filename})
-            """if self.channels[i] != None:
-                self.channels[i].load(filename, console)"""
+            """if self.instruments[i] != None:
+                self.instruments[i].load(filename, console)"""
 
     def save(self, path):    
         for i in range(0, 16):
-            channel = self.channels[i]
+            channel = self.instruments[i]
             if channel == None:
                 continue
 
             device = 'None'
-            if self.wires[i] != None:
-                device = str(pygame.midi.get_device_info(self.wires[i]))
+            #if self.wires[i] != []:
+            #    device = str(pygame.midi.get_device_info(self.wires[i]))
 
             file = open(interpolate('{path}/channel_{i}.save'), 'w+')
             file.write(interpolate('channel: {i}\n'))
             file.write(interpolate('device: {device}\n'));
             file.close()
 
-            self.channels[i].save(interpolate('{path}/channel_{i}.save'))
+            self.instruments[i].save(interpolate('{path}/channel_{i}.save'))
 
 
-    def wireChannel(self, device, instr):
-        self.inputs[device] = pygame.midi.Input(instr)
-        self.wires[device] = instr
+    def wireChannel(self, instrument, channel):
+        self.wires[channel].append(instrument)
 
     def update(self):
-        for i in range(0, 15):
-            if self.channels[i] == None:
-                continue
-            if self.inputs[i] == None:
-                continue
-            for msg in self.inputs[i].read(100):
+        for inp in self.inputs:
+            for msg in inp.read(100):
                 command = (msg[0][0] & 240) >> 4
                 if command == 8:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
                     strength = msg[0][2]
-                    instrument = self.channels[ch]
-                    instrument.release(note, 0)
+                    for w in self.wires[ch]:
+                        instrument = self.instruments[w]
+                        instrument.release(note, 0)
                 if command == 9:
                     ch = msg[0][0] & 15
                     note = msg[0][1]
                     strength = msg[0][2]
-                    instrument = self.channels[ch]
-                    instrument.press(note, strength)
-                    """sample = instrument.samples[note]
-                    self.sampler.play(ch"""
+                    for w in self.wires[ch]:
+                        instrument = self.instruments[w]
+                        instrument.press(note, strength)
 
 

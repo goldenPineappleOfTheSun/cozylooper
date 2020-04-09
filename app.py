@@ -550,6 +550,7 @@ def main():
 
     pygame.init()
     pygame.midi.init()
+    midi.initDevices()
     draw.init(34, 30)
     logo = pygame.image.load("Г. Мясоедов Осеннее утро. 1893.jpg")
     pygame.display.set_icon(logo)
@@ -648,14 +649,14 @@ def main():
                         currentSide.initDraw()
                         currentSide.redraw()
                 else:
-                    if midi.channels[n].getType() == type:
+                    if midi.instruments[n].getType() == type:
                         if type == 'piano':
-                            currentWide = midi.channels[n]
+                            currentWide = midi.instruments[n]
                             currentWide.redrawTitle()
                             currentWide.initDraw()
                             currentWide.redraw()
                         if type == 'pads':
-                            currentSide = midi.channels[n]
+                            currentSide = midi.instruments[n]
                             currentSide.redrawTitle()
                             currentSide.initDraw()
                             currentSide.redraw()
