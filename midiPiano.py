@@ -123,8 +123,9 @@ class MidiPiano(AreaWide):
         if self.drawingMap['info'] == 'display':
             if fullRedraw or changed('info-sample-color'):
                 color = self.drawingMap['info-sample-color']
-                draw.clearRect(x + 0.5, y + 0.25, 0.5, 0.5, '@light')
-                draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, color)
+                if color != 'None':
+                    draw.clearRect(x + 0.5, y + 0.25, 0.5, 0.5, '@light')
+                    draw.rectangle(x + 0.5, y + 0.25, 0.5, 0.5, color)
             if fullRedraw or changed('info-sample-name'):
                 name = self.drawingMap['info-sample-name']
                 draw.clearRect(x + 1.25, y + 0.25, 1.5, 0.5, '@light')
@@ -179,7 +180,13 @@ class MidiPiano(AreaWide):
     def redrawWhiteKey(self, n, selected, samplename, color):
         kl = self.KEYBOARDLEFT
         key = n + self.camera
-        color = color if color != 'None' else '@clear' if not selected else '@set'
+        if color == 'None':
+            color = '@clear'
+            if selected and color == '@clear':
+                color = '@set'
+            elif self.samples[key] != None:
+                color = '@light'
+
         textcolor = '@neutral' if selected == False else '@dark'
         bg = '@clear' if selected == False else '@set'
         text = samplename
@@ -196,7 +203,12 @@ class MidiPiano(AreaWide):
     def redrawBlackKey(self, n, selected, samplename, color):
         kl = self.KEYBOARDLEFT
         key = n + self.camera
-        color = color if color != 'None' else '@neutral' if not selected else '@set'
+        if color == 'None':
+            color = '@neutral'
+            if selected and color == '@clear':
+                color = '@set'
+            elif self.samples[key] != None:
+                color = '@light'
         bg = '@neutral' if selected == False else '@set'
         textcolor = '@clear' if selected == False else '@dark'
         text = samplename
@@ -224,7 +236,8 @@ class MidiPiano(AreaWide):
         sample = self.samples[note + self.camera]
         self._dm_keyChanged(note, selected = True)
         if sample != None:
-            self._dm_infoChanged(mode = 'display', samplecolor = self.samplesColors[sample], samplename = sample)
+            samplecolor = self.samplesColors[sample] if sample in self.samplesColors else 'None'
+            self._dm_infoChanged(mode = 'display', samplecolor = samplecolor, samplename = sample)
         else:
             self._dm_infoChanged(mode = 'None')
 
@@ -266,7 +279,12 @@ class MidiPiano(AreaWide):
         sel = self.selected + self.camera
         text = self.samples[sel]
         if text == None:
-            text = bank + '01'
+            if sel > 0 and self.samples[sel-1] != None:
+                text = self.samples[sel-1]
+            elif sel < 9 * 12 and self.samples[sel+1] != None:
+                text = self.samples[sel+1]
+            else:
+                text = bank + '01'
         else:
             text = bank + text[1:3]
         self.samples[sel] = text
@@ -362,7 +380,7 @@ class MidiPiano(AreaWide):
             sample = self.samples[i + self.camera]
             added = sample in old and not sample in self.samplesColors
             removed = not sample in old and sample in self.samplesColors
-            changed = sample in old and old[sample] != self.samplesColors[sample]
+            changed = sample in old and sample in self.samplesColors and old[sample] != self.samplesColors[sample]
             if added or removed or changed:
                 color = self.samplesColors[sample] if sample in self.samplesColors else 'None'
                 self._dm_keyChanged(i, color = color)
@@ -531,8 +549,9 @@ class MidiPiano(AreaWide):
             if self.inputpointer == 0 and n < 2:
                 self.samples[sel] = text[0:1] + str(n) + text[2:3]
                 self.inputpointer = 1
+                self._dm_keyChanged(self.selected, samplename = self.samples[sel])
                 self.selectNote(self.selected)
-            elif self.inputpointer == 1 and n < 7 and (n != 0 or text[1:2] != '0'):
+            elif (self.inputpointer == 1 and text[1:2] == '0') or (self.inputpointer == 1 and n < 7 and text[1:2] == '1'):
                 self.samples[sel] = text[0:2] + str(n)
                 self.inputpointer = 0
                 self.selectNote(self.selected)

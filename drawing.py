@@ -119,7 +119,7 @@ class DrawStyle:
             else:
                 result = value
         else:
-            raise Exception('unknown color format')
+            raise Exception('unknown color format: ' + value)
         return result
 
 class Coords:
