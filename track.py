@@ -261,6 +261,28 @@ class Track:
                 data = np.zeros(frames)
             self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
 
+    def writeFiledata(self, sound, samplerate = 44100):
+        """self.state = TrackState.record
+        blocksize = 512
+        pointer = 0
+        for i in range(0, math.floor(len(sound) / blocksize)):
+            indata = sound[i:i + blocksize]
+            self._writeAudio(indata, None, samplerate = samplerate, frames = blocksize)
+            pointer = i + blocksize
+        #indata = sound[pointer:len(sound)] + np.zeros(blocksize - (len(sound) % blocksize))
+        #self._writeAudio(indata, None, samplerate = samplerate, frames = blocksize)
+        self.state = TrackState.default"""
+        if len(self.memory) >= len(sound):
+            self.memory = self.memory + np.pad(sound, (0, len(self.memory) - len(sound)), 'constant')
+        else:
+            self.memory = self.memory + sound[0:len(self.memory)]
+
+        for i in range(0, math.floor(len(sound) / int(len(self.memory) / 16))):
+            if i < 16:
+                self.histogram[i] = 0.5
+
+        self.redraw()
+
     def _writeAudio(self, indata, timeinfo, samplerate = 44100, frames = sd.default.blocksize):
         if self._smoothPointer > 0:
             self.smoothAfter(indata, timeinfo, samplerate = samplerate, frames = frames)

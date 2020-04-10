@@ -53,6 +53,10 @@ class Soundbank:
             return []
         return self.samples[name]
 
+    def readDataFromFile(self, path):
+        sound, soundSamplerate = sf.read('samples/' + path, dtype='float32')  
+        return np.array(sound), soundSamplerate
+
     def savesSave(self, foldername):
         path = foldername + '/samples/'
         if not os.path.exists(path):

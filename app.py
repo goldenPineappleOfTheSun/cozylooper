@@ -221,6 +221,16 @@ def reshapeSound(sound, shape):
         sound = np.resize(sound, [shape[0], shape[1]])
     return sound
 
+def loadTapesFromFolder(path):
+    for file in os.listdir('samples/' + path):
+        if file.endswith(".wav") or file.endswith(".mp3"):
+            names = ['track' + str(x + 1) for x in range(0, 12)]
+            name = os.path.basename(file.split('.')[0])
+            if name in names:
+                n = int(name[5:]) - 1
+                sound = processor.stereoToMono(soundbank.readDataFromFile(path +'/' + file)[0], 0)
+                tracks[n].writeFiledata(sound)
+
 def mainTabbed(event):
     looperAreas.changeArea('side')
 
@@ -616,6 +626,10 @@ def main():
                 if not soundbank.folderExists(event.dict['path']):
                     console.print('no such folder')
                 soundbank.loadBankFromFolder(event.dict['path'], event.dict['bank'])
+            elif events.check(event, 'LOAD_TAPES'):
+                if not soundbank.folderExists(event.dict['path']):
+                    console.print('no such folder')
+                loadTapesFromFolder(event.dict['path'])
             elif events.check(event, 'UPDATE_SAMPLE'):
                 sampler.updateSample(event.dict['name'])
             elif events.check(event, 'WIRE_MIDI'):

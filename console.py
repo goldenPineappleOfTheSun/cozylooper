@@ -18,6 +18,7 @@ class Console:
             'commands': self.c_listCommands,
             'devices': self.c_listDevices,
             'load-bank': self.c_loadBank,
+            'load-tapes': self.c_loadTapes,
             'create-instrument': self.c_createInstrument,
             'wire-midi': self.c_wireMidi,
             'piano': self.c_piano,
@@ -164,6 +165,14 @@ class Console:
         else:
             events.emit('LOAD_BANK', {'path': path, 'bank': n})
             return 'all banks ' + n + ' from ' + path + ' have been loaded'
+
+    def c_loadTapes(self, arguments):
+        _args = consoleParser(arguments)
+        _named = _args['named']
+        path = arguments[0]
+        events.emit('LOAD_TAPES', {'path': path})
+        return 'all tracks from ' + path + ' have been loaded'
+
 
     def c_createInstrument(self, arguments):
         _args = consoleParser(arguments)
