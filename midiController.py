@@ -11,6 +11,7 @@ class MidiController:
     def __init__(self, sampler):
         """ instruments are instruments created inside the looper """
         self.instruments = np.full((16), None)
+        self.enabled = np.full((16), True)
         """ inputs are devices from which midi messages are recieved. index is equal to midi channel """
         self.inputs = []
         """ channels are midi channels """
@@ -34,6 +35,12 @@ class MidiController:
 
     def autoplayTick(self, n, fraction):
         pass
+
+    def disable(self, n):
+        self.enabled[n] = False
+
+    def enable(self, n):
+        self.enabled[n] = True
 
     def findDeviceByName(self, name):
         devices = []
@@ -99,7 +106,8 @@ class MidiController:
                     note = msg[0][1]
                     strength = msg[0][2]
                     for w in self.wires[ch]:
-                        instrument = self.instruments[w]
-                        instrument.press(note, strength)
+                        if self.enabled[w]:
+                            instrument = self.instruments[w]
+                            instrument.press(note, strength)
 
 

@@ -706,6 +706,10 @@ def main():
                         currentWide.redrawStep4()
                     if step == 5:
                         currentWide.redrawStep5()
+            elif events.check(event, 'DISABLE_INSTRUMENT'):
+                midi.disable(int(event.dict['n']))
+            elif events.check(event, 'ENABLE_INSTRUMENT'):
+                midi.enable(int(event.dict['n']))
 
 
 if __name__ == "__main__":

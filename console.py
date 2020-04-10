@@ -25,7 +25,9 @@ class Console:
             'pads': self.c_pads,
             'save': self.c_save,
             'load': self.c_load,
-            'sampler': self.c_sampler
+            'sampler': self.c_sampler,
+            'disable-instrument': self.c_disableInstrument,
+            'enable-instrument': self.c_enableInstrument
         }
         self.history = []
         self._historyPointer = 0
@@ -222,6 +224,18 @@ class Console:
         _args = consoleParser(arguments)
         events.emit('SHOW_SAMPLER', {})
         return 'sampler displayed'
+
+    def c_disableInstrument(self, arguments):
+        _args = consoleParser(arguments)
+        n = arguments[0]
+        events.emit('DISABLE_INSTRUMENT', {'n': n})
+        return str(n) + ' disabled'
+
+    def c_enableInstrument(self, arguments):
+        _args = consoleParser(arguments)
+        n = arguments[0]
+        events.emit('ENABLE_INSTRUMENT', {'n': n})
+        return str(n) + ' enabled'
 
 
 def consoleParser(arguments):
