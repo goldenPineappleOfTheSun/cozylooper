@@ -710,6 +710,8 @@ def main():
                 midi.disable(int(event.dict['n']))
             elif events.check(event, 'ENABLE_INSTRUMENT'):
                 midi.enable(int(event.dict['n']))
+            elif events.check(event, 'WIRE_TRACK'):
+                tracks[event.dict['track']].setMidiChannel(event.dict['instrument'])
 
 
 if __name__ == "__main__":

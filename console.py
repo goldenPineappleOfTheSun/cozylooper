@@ -27,7 +27,8 @@ class Console:
             'load': self.c_load,
             'sampler': self.c_sampler,
             'disable-instrument': self.c_disableInstrument,
-            'enable-instrument': self.c_enableInstrument
+            'enable-instrument': self.c_enableInstrument,
+            'wire-track': self.c_wireTrack
         }
         self.history = []
         self._historyPointer = 0
@@ -236,6 +237,14 @@ class Console:
         n = arguments[0]
         events.emit('ENABLE_INSTRUMENT', {'n': n})
         return str(n) + ' enabled'
+
+    def c_wireTrack(self, arguments):
+        _args = consoleParser(arguments)
+        track = int(arguments[0])
+        instrument = int(arguments[1])
+        events.emit('WIRE_TRACK', {'track': track, 'instrument': instrument})
+        return str(track) + ' wired to ' + str(instrument)
+
 
 
 def consoleParser(arguments):
