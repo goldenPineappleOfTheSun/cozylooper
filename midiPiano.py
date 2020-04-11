@@ -57,6 +57,10 @@ class MidiPiano(AreaWide):
                 
         events.emit('REDRAW_PIANO', {'step': 1})
 
+        for name in self.sampler.soundbank.names:
+            if 'repeat ' + name in dict:
+                self.repeats[name] = int(dict['repeat ' + name])
+
     def press(self, note, strengh):
         options = {}
         samplename = self.samples[note]
@@ -148,7 +152,6 @@ class MidiPiano(AreaWide):
                 draw.text(name, x + 1.25, y + 0.45, '@dark tiny midleft')
             if fullRedraw or changed('info-sample-repeat'):
                 text = self.drawingMap['info-sample-repeat']
-                print(text)
                 text = text if text != 'None' else '-'
                 draw.clearRect(x, y + 1, 4, 1, '@light')
                 if cursor == '0 0':
@@ -231,6 +234,10 @@ class MidiPiano(AreaWide):
             if s == None:
                 continue
             file.write(interpolate('map {i}: {s}\n'))
+        for rep in self.repeats:
+            mode = self.repeats[rep]
+            if mode != None:
+                file.write(interpolate('repeat {rep}: {mode}\n'))
         file.close()
 
     def selectNote(self, note):

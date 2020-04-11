@@ -7,6 +7,8 @@ import drawing as draw
 from trackStates import TrackState
 import globalSettings as settings
 import processor
+from utils import interpolate
+import utils
 
 class Track:
     def __init__(self, n, behaviour, left = 0, top = 0):
@@ -15,7 +17,6 @@ class Track:
         self.top = top
         self.size = 16
         self.beat = 0
-        self.bpm = 120
         self.state = TrackState.default
         self._inputSize = 16
         self._isHalfBeat = False
@@ -86,15 +87,6 @@ class Track:
         if (self._inputSize > 16):
             self._inputSize = 16
         self.redraw()    
-
-    def setSize(self, n):
-        self.state = TrackState.setSize
-        self._inputSize = n
-        if (self._inputSize > 16):
-            self._inputSize = 16
-        if (self._inputSize < 1):
-            self._inputSize = 1
-        self.confirm()
 
     def resetMemory(self, 
                     samplerate = 44100,   
@@ -178,6 +170,33 @@ class Track:
                 self.drawHistogram(self.beat, 15, '@darkplay' if self.state == TrackState.play else '@darkrecord')
                 draw.rectangle(self.left, self.top + 1 + self.beat - 1, self.WIDTH, 1, styles[self.state])  
                 self.drawHistogram(self.beat - 1, self.beat, '@darkplay' if self.state == TrackState.play else '@darkrecord')      
+
+    def save(self, path):
+        channelType = self.channelInfo['name']
+        channelNumber = self.channelInfo['channel']
+        behaviour = self.behaviour.getType()
+        file = open(path + '/track_' + str(self.n) + '.save', 'a')
+        file.write(interpolate('track: {self.n}\n'))
+        file.write(interpolate('instrument type: {channelType}\n'))
+        file.write(interpolate('instrument number: {channelNumber}\n'))
+        file.write(interpolate('size: {self.size}\n'))
+        file.write(interpolate('behaviour: {behaviour}\n'))
+        file.close()
+
+    def load(self, filename, console):
+        dict = utils.readSaveFile(filename + '/track_' + str(self.n) + '.save')
+        if dict['instrument type'] == 'midi':
+            self.setMidiChannel(int(dict['instrument number']))
+        self.setSize(int(dict['size']))
+
+    def setSize(self, n):
+        self.state = TrackState.setSize
+        self._inputSize = n
+        if (self._inputSize > 16):
+            self._inputSize = 16
+        if (self._inputSize < 1):
+            self._inputSize = 1
+        self.confirm()
 
     def setBpm(self, value):
         self.bpm = value

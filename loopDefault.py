@@ -3,6 +3,9 @@ from trackStates import TrackState
 
 class LoopDefault:
 
+    def getType():
+        return 'LoopDefault'
+
     """ when track started """
     def onBeat(track):
         if track.state == TrackState.readyToPlay:

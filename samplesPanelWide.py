@@ -96,8 +96,6 @@ class SamplesPanelWide(AreaWide):
                 self.camera += 1
             if self.camera > count - 5:
                 self.camera = count - 5
-            #self.camera = self.selectedrow
-            print(self.camera)
             self.redraw()
         elif self.selectedcol == 1:
             self.wheelSuspendMode(1)

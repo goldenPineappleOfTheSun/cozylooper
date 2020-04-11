@@ -139,10 +139,14 @@ def load(foldername):
             n = data[1]
             console.emulate(interpolate('pads {n}'))
 
+    for track in tracks:
+        track.load(path, console)
+
 def save(foldername):
     path = 'saves/' + foldername
     if not os.path.exists(path):
         os.mkdir(path)
+        os.mkdir(path + '/samples')
     for filename in os.listdir(path):
         filepath = os.path.join(path, filename)
         try:
@@ -165,6 +169,9 @@ def save(foldername):
     soundbank.savesSave(path)
     sampler.save(path)
     midi.save(path)
+
+    for track in tracks:
+        track.save(path)
 
 def tick():    
     tonearmA.update()
@@ -682,13 +689,13 @@ def main():
             elif events.check(event, 'LOAD'):
                 load(event.dict['name'])
             elif events.check(event, 'LOAD_INSTRUMENT'):
-                if midi.channels[event.dict['n']] == None and (not 'repeats' in event.dict or event.dict['repeats'] < 10000):
+                if midi.instruments[event.dict['n']] == None and (not 'repeats' in event.dict or event.dict['repeats'] < 10000):
                     repeats = events.dict['repeats'] if 'repeats' in event.dict else 10000
                     events.emit('LOAD_INSTRUMENT', {'n': events.dict['n'], 'filename': events.dict['filename'], 'repeats': repeats})
                 elif 'repeats' in event.dict and event.dict['repeats'] >= 10000:
                     print('MANY REPEATS for LOAD_INSTRUMENT')
                 else:
-                    midi.channels[event.dict['n']].load(event.dict['filename'], console)
+                    midi.instruments[event.dict['n']].load(event.dict['filename'], console)
             elif events.check(event, 'SHOW_SAMPLER'):
                 currentWide = samplesControlPanel
                 currentWide.redrawTitle()
@@ -716,3 +723,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

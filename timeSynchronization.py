@@ -88,7 +88,6 @@ def _getDelta(precision = None, units = 'samples'):
     precs = {'loop': 0.25 * beatsCount, 'bar': 0.25 * signature, 'beat': 0.25, '1/2': 0.25/2, '1/4': 0.25/4, '1/8': 0.25/8, '1/16': 0.25/16, '1/32': 0.25/32}
     prec = precs[precision]
     fullSize = prec * beatSize
-    print(beatSize)
     pos = timeLoop % fullSize
     d = pos if pos < fullSize * 0.5 else pos - fullSize
     if units == 'samples':

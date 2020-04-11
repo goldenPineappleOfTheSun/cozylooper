@@ -54,20 +54,25 @@ class MidiController:
 
     def load(self, path, console):
         for i in range(0, 16):
-            filename = interpolate('{path}/channel_{i}.save')
+            filename = interpolate('{path}/instrument_{i}.save')
             if not os.path.isfile(filename):
                 continue
 
             dict = utils.readSaveFile(filename)
             t = dict['type']
-            channel = dict['channel']
+            channel = dict['instrument']
             device = self.findDeviceByName(dict['device'])
             console.emulate(interpolate('create-instrument {t} {channel}'))
             if device != None:
                 console.emulate(interpolate('wire-midi {channel} {device}'))
             events.emit('LOAD_INSTRUMENT', {'n': i, 'filename': filename})
-            """if self.instruments[i] != None:
-                self.instruments[i].load(filename, console)"""
+
+        dict = utils.readSaveFile(interpolate('{path}/midi.save'))
+        for i in range(0, 16):
+            if 'wire ' + str(i) in dict:
+                for part in dict['wire ' + str(i)].split(', '):
+                    self.wireChannel(int(part), i)
+
 
     def save(self, path):    
         for i in range(0, 16):
@@ -79,13 +84,21 @@ class MidiController:
             #if self.wires[i] != []:
             #    device = str(pygame.midi.get_device_info(self.wires[i]))
 
-            file = open(interpolate('{path}/channel_{i}.save'), 'w+')
-            file.write(interpolate('channel: {i}\n'))
+            file = open(interpolate('{path}/instrument_{i}.save'), 'w+')
+            file.write(interpolate('instrument: {i}\n'))
             file.write(interpolate('device: {device}\n'));
             file.close()
 
-            self.instruments[i].save(interpolate('{path}/channel_{i}.save'))
+            if self.instruments[i] != None:                
+                self.instruments[i].save(interpolate('{path}/instrument_{i}.save'))
 
+            file = open(interpolate('{path}/midi.save'), 'w+')
+            for i in range(0, len(self.wires)):
+                if self.wires[i] != []:
+                    wires = self.wires[i]
+                    txt = str(wires)[1:-1]
+                    file.write(interpolate('wire {i}: {txt}\n'))
+            file.close()
 
     def wireChannel(self, instrument, channel):
         self.wires[channel].append(instrument)
