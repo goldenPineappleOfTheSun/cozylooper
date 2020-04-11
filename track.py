@@ -1,12 +1,14 @@
 import math
 import queue
 import types
+import os
 import numpy as np
 import sounddevice as sd
 import drawing as draw
 from trackStates import TrackState
 import globalSettings as settings
 import processor
+import soundfile as sf
 from utils import interpolate
 import utils
 
@@ -36,6 +38,7 @@ class Track:
         self.behaviour = behaviour
         self.playAfterRecord = False
         self.histogram = [0] * 16
+        self.isLoadedTape = False
 
     def cancel(self):
         if self.state == TrackState.setSize:
@@ -182,12 +185,26 @@ class Track:
         file.write(interpolate('size: {self.size}\n'))
         file.write(interpolate('behaviour: {behaviour}\n'))
         file.close()
+        
+        if len(self.memory) > 0 and np.sum(self.memory) != 0:
+            sf.write(path + '/track' + str(self.n + 1) + '.wav', self.memory, 44100)
 
-    def load(self, filename, console):
-        dict = utils.readSaveFile(filename + '/track_' + str(self.n) + '.save')
+
+    def load(self, path, console):
+        file = path + '/track_' + str(self.n) + '.save'
+        if not os.path.isfile(file):
+            return
+
+        dict = utils.readSaveFile(file)
+
+        self.setSize(int(dict['size']))
         if dict['instrument type'] == 'midi':
             self.setMidiChannel(int(dict['instrument number']))
-        self.setSize(int(dict['size']))
+
+        file = path + '/track' + str(self.n + 1) + '.wav'
+        if os.path.isfile(file):
+            sound, soundSamplerate = sf.read(file, dtype='float32')
+            self.writeFiledata(sound, samplerate = soundSamplerate)
 
     def setSize(self, n):
         self.state = TrackState.setSize
@@ -281,16 +298,6 @@ class Track:
             self._writeAudio(data, timeinfo, samplerate = samplerate, frames = frames)
 
     def writeFiledata(self, sound, samplerate = 44100):
-        """self.state = TrackState.record
-        blocksize = 512
-        pointer = 0
-        for i in range(0, math.floor(len(sound) / blocksize)):
-            indata = sound[i:i + blocksize]
-            self._writeAudio(indata, None, samplerate = samplerate, frames = blocksize)
-            pointer = i + blocksize
-        #indata = sound[pointer:len(sound)] + np.zeros(blocksize - (len(sound) % blocksize))
-        #self._writeAudio(indata, None, samplerate = samplerate, frames = blocksize)
-        self.state = TrackState.default"""
         if len(self.memory) >= len(sound):
             self.memory = self.memory + np.pad(sound, (0, len(self.memory) - len(sound)), 'constant')
         else:
@@ -300,6 +307,7 @@ class Track:
             if i < 16:
                 self.histogram[i] = 0.5
 
+        self.isLoadedTape = True
         self.redraw()
 
     def _writeAudio(self, indata, timeinfo, samplerate = 44100, frames = sd.default.blocksize):
